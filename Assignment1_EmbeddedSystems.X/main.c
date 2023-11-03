@@ -164,11 +164,11 @@ int main() {
         
         // Check if it's a CR or LF character
         if (receivedChar == '\r' || receivedChar == '\n') {
-            clearLCD();
+            clearLCD(); //only apply to the FIRST_ROW
         } else {
             // Display received character on the first row of LCD
             displayLCD(&receivedChar, 1, charCount);
-            charCount++;
+            charCount++; //per tenere traccia dei caratteri quando arriva al numero max per riga, fare % numero_max se da 0 -> clear
         }
         
     return 0;

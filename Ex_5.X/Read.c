@@ -80,9 +80,9 @@ void tmr_setup_period(int timer, int ms){
         T2CONbits.TCKPS = presc; // prescaler 1:64 //VA IN DECIMALE NON IN BINARIO (non 10 ma 2)
         T2CONbits.TON = 1; // starts the timer!
     }
-    /*else {
+    //else {
         //err
-    }*/
+    //}
 }
 
 //solution with while loop, not ideal, prova poi a fare con if
@@ -106,14 +106,10 @@ void tmr_wait_period(int timer) {
     //} 
 }
 
-//void display_LCD(char c){
-    
-//}
-
 int main(void) {
     //config lcd
     SPI1CONbits.MSTEN = 1; // master mode
-    SPI1CONbits.MODE16 = 1; // 16-bit mode
+    SPI1CONbits.MODE16 = 0; // 8-bit mode
     SPI1CONbits.PPRE = 3; // 1:1 primary prescaler
     SPI1CONbits.SPRE = 3; // 5:1 secondary prescaler
     SPI1STATbits.SPIEN = 1; // enable SPI
@@ -123,21 +119,23 @@ int main(void) {
     U2MODEbits.UARTEN = 1; // enable UART
     U2STAbits.UTXEN = 1; // enable U2TX (must be after UARTEN)
     while (U2STAbits.UTXBF == 1); // Wait for transmit buffer to be not full
-    U2TXREG = 'C'; // Send character via UART2
+    //U2TXREG = 'C'; // Send character via UART2 //non serve a un cazzo?
     
     tmr_setup_period(TIMER1, 1000);
+    
+    tmr_wait_period(TIMER1);
 
-    while (1) {
-        // Check if a character has been received
+    //perchè funziona???????
+    while (1) {        
         if (U2STAbits.URXDA == 1) {
             char c = U2RXREG; // Read character from UART2
-            //display_LCD(c); // Send character to LCD
-    
             while(SPI1STATbits.SPITBF == 1);    
             tmr_wait_period(TIMER1);
             SPI1BUF = c;
         }
     }
+    
+    
     
     return 0;
 }
