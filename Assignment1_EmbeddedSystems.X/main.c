@@ -95,17 +95,60 @@ char algorithm() {
     U1BRG = 11; // (7372800 / 4) / (16 * 9600) ? 1
     U1MODEbits.UARTEN = 1; // enable UART
     U1STAbits.UTXEN = 1;   // enable U1TX (must be after UARTEN)
-    U1TXREG = 'C'; // send ?C?
+    //U1TXREG = c; // send ?C?
+    
+    //if 
+            
 }
 
-int main() {
-    tmr_setup_period(TIMER1, 10);
-    
+//hyperslowmo 1.30 - 1.35 howtouart tutorial
+
+//if (rowIndex == 0) {
+//    lcd_clear(FIRST_ROW);
+//}
+//lcd_move_cursor(FIRST_ROW, rowIndex);
+//spi_put_char(c);
+//rowIndex =  (rowIndex + 1) % 16;
+
+//sprintf(secondRow, "Char received: %d", charReceived);
+//spi_put_string(secondRow);
+
+//timer_wait_period(TIMER1);
+
+//IEC1bits.U1RXIE = 1 //interrupt ricezione abilitato
+
+void spi_put_string(char* str) {
+    for (int i=0; str[i]!='\0'; i++) {
+        while (SPI1STATbits.SPITBF == 1);
+        SPI1BUF = str[i];
+    }
+}
+
+void spi_put_string(char c) {
+    while (SPI1STATbits.SPITBF == 1);
+    SPI1BUF = c;
+}
+
+void clearLCD() {
+    while(SPI1STATbits.SPITBF == 1); // wait until not full
+    SPI1BUF = 0x80;
+}
+
+
+int main() {    
+    //config SPI
     SPI1CONbits.MSTEN = 1; // master mode
     SPI1CONbits.MODE16 = 0; // 8?bit mode
     SPI1CONbits.PPRE = 3; // 1:1 primary prescaler
     SPI1CONbits.SPRE = 3; // 5:1 secondary prescaler
     SPI1STATbits.SPIEN = 1; // enable SPI
+    
+    //config UART
+    U2BRG = 11; // (7372800 / 4) / (16 * 9600) ? 1
+    U2MODEbits.UARTEN = 1; // enable UART
+    U2STAbits.UTXEN = 1; // enable U1TX (must be after UARTEN)
+    
+    tmr_setup_period(TIMER1, 10);
     
     tmr_setup_period(TIMER1,1000);
     
@@ -115,7 +158,103 @@ int main() {
         //SPI1BUF = c;
         // code to handle the assignment   
     }
+    
+    if (U2STAbits.URXDA == 1) {
+        char receivedChar = U2RXREG;
+        
+        // Check if it's a CR or LF character
+        if (receivedChar == '\r' || receivedChar == '\n') {
+            clearLCD();
+        } else {
+            // Display received character on the first row of LCD
+            displayLCD(&receivedChar, 1, charCount);
+            charCount++;
+        }
         
     return 0;
+    
+    
+/* case TIMER1
+ * ?
+ while (IFS0bits.T1F == 0) {
+ * }
+ * IFS0bits.T1F = 0;
+ * break;
+ * 
+ * case TIMER2
+ */
 }
+
+/*
+ #include <xc.h>
+#include <stdio.h>
+#include <string.h>
+
+#define _XTAL_FREQ 20000000  // Define your crystal frequency (20 MHz in this example)
+
+void initUART2() {
+    U2BRG = 64; // for 115200 baud rate at 20 MHz clock
+    U2MODE = 0x8000; // enable UART, 8N1
+    U2STA = 0x1400; // enable TX and RX, clear interrupt flags
+}
+
+void initLCD() {
+    // Initialize LCD configuration here
+}
+
+void displayLCD(char* message, int row, int col) {
+    // Function to display a message on LCD at specified row and column
+}
+
+void clearLCD() {
+    // Function to clear the LCD display
+}
+
+int main() {
+    int charCount = 0;
+    char receivedChar;
+    char buffer[10]; // Buffer to hold character count as string
+
+    initUART2();
+    initLCD();
+
+    while (1) {
+        // Simulate the algorithm execution time
+        __delay_ms(7);
+
+        // Check if a character has been received
+        if (U2STAbits.URXDA == 1) {
+            receivedChar = U2RXREG;
+
+            // Check if it's a CR or LF character
+            if (receivedChar == '\r' || receivedChar == '\n') {
+                clearLCD();
+            } else {
+                // Display received character on the first row of LCD
+                displayLCD(&receivedChar, 1, charCount);
+                charCount++;
+            }
+        }
+
+        // Check if button S5 is pressed
+        if (S5_BUTTON_PRESSED) {
+            sprintf(buffer, "%d", charCount);
+            putsUART2(buffer);
+        }
+
+        // Check if button S6 is pressed
+        if (S6_BUTTON_PRESSED) {
+            clearLCD();
+            charCount = 0;
+        }
+
+        // Display the character count on the second row of LCD
+        sprintf(buffer, "Char Recv: %d", charCount);
+        displayLCD(buffer, 2, 1);
+    }
+
+    return 0;
+}
+
+ */
 
