@@ -16,32 +16,32 @@ void tmr_setup_period(int timer, int ms) {
     int presc; 
     int t = 1;
     
-    if (steps <= 65535) {
+    if (steps <= 65535) {          // Prescaler 1:1
         presc = 1;
-        t = 0;
+        t = 0; // 00  
     }
     else if (steps/8 <= 65535) {   // Prescaler 1:8
         presc = 8;
-        t = 1;
+        t = 1; // 01
     }
     else if (steps/64 <= 65535) {  // Prescaler 1:64
         presc = 64;
-        t = 2;
+        t = 2; // 10
     }
     else if (steps/256 <= 65535) { // Prescaler 1:256
         presc = 256;
-        t = 3;
+        t = 3; // 11
     }
     
     if (timer == 1) {
-        T1CONbits.TON = 0; 
+        T1CONbits.TON = 0;      // Stops the timer
         TMR1 = 0;               // Reset timer counter
-        T1CONbits.TCKPS = t;    // Set the prescaler
+        T1CONbits.TCKPS = t;    // Set the prescale value
         PR1 = steps/presc;      // Set the number of clock step of the counter
         T1CONbits.TON = 1;      // Starts the timer
     }
     else if (timer == 2) {
-        T1CONbits.TON = 0;
+        T1CONbits.TON = 0;       // Stops the timer
         TMR2 = 0;                // Reset timer counter
         T2CONbits.TCKPS = t;     // Set the prescaler 
         PR2 = steps/presc;       // Set the number of clock step of the counter
@@ -54,11 +54,11 @@ void tmr_setup_period(int timer, int ms) {
 void tmr_wait_period(int timer) { 
     if (timer == 1) {
         while(IFS0bits.T1IF == 0){};
-        IFS0bits.T1IF = 0; // Reset timer1 flag
+        IFS0bits.T1IF = 0; // Reset timer1 interrupt flag
     }
     else if (timer == 2) {
         while(IFS0bits.T2IF == 0){};
-        IFS0bits.T2IF = 0; // Reset timer2 flag
+        IFS0bits.T2IF = 0; // Reset timer2 interrupt flag
     }
 }
 
@@ -73,12 +73,12 @@ void spi_setup() {
     SPI1CONbits.MSTEN = 1;  // Master mode 
     SPI1CONbits.MODE16 = 0; // 8-bit mode (16-bit if = 1)
     SPI1CONbits.PPRE = 3;   // 1:1 Primary prescaler 
-    SPI1CONbits.SPRE = 7;   // 2:1 Secondary prescaler 
+    SPI1CONbits.SPRE = 6;   // 2:1 Secondary prescaler 
     SPI1STATbits.SPIEN = 1; // Enable SPI
 }
 
 // Function that writes a string on LCD display
-void lcd_write_string(char str[]){
+void lcd_write(char str[]){
     for(int i = 0; str[i] != '\0'; i++) {
         while (SPI1STATbits.SPITBF == 1) {};
         SPI1BUF = str[i];
@@ -89,8 +89,14 @@ void lcd_write_string(char str[]){
 void uart_setup() {
     U2BRG = 11;               // (7372800 / 4) / (16 * 9600)
     U2MODEbits.UARTEN = 1;    // Enable UART 
-    U2STAbits.UTXEN = 1;      // Enable U2TX (must be after UARTEN)
+    U2STAbits.UTXEN = 1;      // Enable Transmission (must be after UARTEN)
     // It will trigger the interrupt when 3/4 of the UART buffer is full
     U2STAbits.URXISEL = 0b10; // Set interrupt when buffer is 3/4 full
     IEC1bits.U2RXIE = 1;      // Enable UART receiver interrupt
+}
+
+// Function used for transmitting data over a UART
+void uart_write(char str[]) {
+    for(int i = 0; str[i] != '\0'; i++)
+        U2TXREG = str[i];
 }

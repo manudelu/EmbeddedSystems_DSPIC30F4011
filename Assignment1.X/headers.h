@@ -21,9 +21,10 @@ void tmr_wait_ms(int timer, int ms);
 
 // Definition of SPI related functions
 void spi_setup();
-void lcd_write_string(char str[]);
+void lcd_write(char str[]);
 
 // Definition of UARTS related functions
 void uart_setup();
+void uart_write(char str[]);
 
 #endif
