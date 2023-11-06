@@ -77,12 +77,44 @@ void spi_setup() {
     SPI1STATbits.SPIEN = 1; // Enable SPI
 }
 
-// Function that writes a string on LCD display
-void lcd_write(char str[]){
+// Function to move the LCD cursor to the specified position
+void lcd_move_cursor(short position)
+{
+    // The arg "position" goes from 0 to 31. Beyond 15 we need to write on the second line
+    // The value 0x80 moves the cursor at the beginning of the first line
+    // The value 0xC0 moves the cursor at the beginning of the second line
+    
+    // Wait until the SPI Transmit Buffer is not full
+    while (SPI1STATbits.SPITBF == 1); 
+    if (position < 16)
+        SPI1BUF = 0x80 + (position%16);
+    //else 
+     //   SPI1BUF = 0xC0 + (position%16);
+}
+
+// Function to write a string on the LCD starting at a specified position
+void lcd_write(short start, char str[]){
+    // Move the cursor to the specified starting position
+    lcd_move_cursor(start);
+    
+    // Iterate through the string and write each character to the LCD
     for(int i = 0; str[i] != '\0'; i++) {
-        while (SPI1STATbits.SPITBF == 1) {};
+        // Wait until the SPI Transmit Buffer is not full
+        while (SPI1STATbits.SPITBF == 1) {}; 
         SPI1BUF = str[i];
     }
+}
+
+// will only be used to clear first row
+// Function to clear a portion of the LCD by writing spaces
+void lcd_clear(short start, short n){
+    // Create an array of spaces to clear the LCD
+    char spaces[n];
+    for(int i=0; i<n; ++i)
+        spaces[i] = ' ';
+    // Write the spaces to the LCD starting at the specified position
+    lcd_write(start, spaces);
+    //reset CharNum?
 }
 
 // Setup for the Universal Asynchronous Receiver-Transmitter (UART) peripheral

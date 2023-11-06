@@ -45,21 +45,50 @@
 #define TIMER1 1
 #define TIMER2 2
 
-int main(void) {
-    uart_setup();               // Setup the UART peripheral
-    spi_setup();                // Setup the SPI peripheral
+// init buttons
+// interrupt S5 & S6
+// S5.onPressed -> send the number of charachters to the uart2 //U2TXREG = CharNumber
+// S6.onPressed -> clear the first row and reset the characters received counter
+
+int main() {
+    // Variables to keep track of the received characters and the current position
+    char receivedChar;
+    int charCount = 0;
+    
+    // Buffer to hold the "Char Recv: XXX" string
+    char charCountStr[16];
+
+    // Initialize the LCD and UART
+    spi_setup();
+    uart_setup();
     tmr_wait_ms(TIMER1, 1000);  // Wait 1s to start the SPI correctly
-/*
+
     while (1) {        
-        if (U2STAbits.URXDA == 1) {
-            char c = U2RXREG; // Read character from UART2
-            while(SPI1STATbits.SPITBF == 1);    
-            tmr_wait_period(TIMER1);
-            SPI1BUF = c;
-        }
+        // Check if a character is available from UART2
+        if (U2STAbits.URXDA) {
+            // Read the character from UART2
+            receivedChar = U2RXREG;
+
+            // Display the received character on the first row of the LCD
+            lcd_write(0, &receivedChar);
+            charCount++;
+
+            // Check for CR or LF characters
+            if (receivedChar == '\r' || receivedChar == '\n') {
+                // Clear the first row of the LCD
+                lcd_clear(0, 16);
+                charCount = 0;
+            }
+
+            // Convert the charCount to a string and display it on the second row
+            //sprintf(charCountStr, "Char Recv: %d", charCount);
+            //lcd_write(16, charCountStr);
+
+            // Delay for 7ms to simulate the algorithm execution time
+            tmr_wait_ms(1, 7);
     }
-  */  
     
     
+    }
     return 0;
 }
