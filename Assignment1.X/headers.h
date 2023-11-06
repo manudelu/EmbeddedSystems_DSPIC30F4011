@@ -14,6 +14,13 @@
 #define TIMER1 1 
 #define TIMER2 2
 
+typedef struct {
+    char * const buffer;
+    int head;
+    int tail;
+    const int maxlen;
+} cb;
+
 // Definition of Timer related functions
 void tmr_setup_period(int timer, int ms); 
 void tmr_wait_period(int timer);
@@ -28,5 +35,9 @@ void lcd_clear(short start, short n);
 // Definition of UARTS related functions
 void uart_setup();
 void uart_write(char str[]);
+
+// Definition for Circular Buffer related functions
+int cb_push(volatile cb *c, char data);
+int cb_pop(volatile cb *c, char *data);
 
 #endif
