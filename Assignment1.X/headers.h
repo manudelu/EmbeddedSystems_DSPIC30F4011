@@ -23,6 +23,7 @@ void tmr_wait_ms(int timer, int ms);
 void spi_setup();
 void lcd_move_cursor(short position);
 void lcd_write(short start, char str[]);
+void lcd_clear(short start, short n);
 
 // Definition of UARTS related functions
 void uart_setup();

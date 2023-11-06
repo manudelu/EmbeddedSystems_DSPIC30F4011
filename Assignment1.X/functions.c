@@ -87,9 +87,9 @@ void lcd_move_cursor(short position)
     // Wait until the SPI Transmit Buffer is not full
     while (SPI1STATbits.SPITBF == 1); 
     if (position < 16)
-        SPI1BUF = 0x80 + (position%16);
-    //else 
-     //   SPI1BUF = 0xC0 + (position%16);
+        SPI1BUF = 0x80 + position;
+    else 
+        SPI1BUF = 0xC0 + (position%16);
 }
 
 // Function to write a string on the LCD starting at a specified position
@@ -105,7 +105,6 @@ void lcd_write(short start, char str[]){
     }
 }
 
-// will only be used to clear first row
 // Function to clear a portion of the LCD by writing spaces
 void lcd_clear(short start, short n){
     // Create an array of spaces to clear the LCD
@@ -114,7 +113,6 @@ void lcd_clear(short start, short n){
         spaces[i] = ' ';
     // Write the spaces to the LCD starting at the specified position
     lcd_write(start, spaces);
-    //reset CharNum?
 }
 
 // Setup for the Universal Asynchronous Receiver-Transmitter (UART) peripheral

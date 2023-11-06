@@ -44,6 +44,7 @@
 
 #define TIMER1 1
 #define TIMER2 2
+    #define BUFFER_SIZE 64  // Define the size of the circular buffer
 
 // init buttons
 // interrupt S5 & S6
@@ -55,6 +56,11 @@ int main() {
     char receivedChar;
     int charCount = 0;
     
+    char circularBuffer[BUFFER_SIZE];
+    int readIndex = 0;     // Points to the next character to read
+    int writeIndex = 0;    // Points to the next position to write
+
+    
     // Buffer to hold the "Char Recv: XXX" string
     char charCountStr[16];
 
@@ -62,30 +68,39 @@ int main() {
     spi_setup();
     uart_setup();
     tmr_wait_ms(TIMER1, 1000);  // Wait 1s to start the SPI correctly
+    tmr_setup_period(TIMER1, 10);
+    lcd_write(16, "Char Recv: "); 
 
-    while (1) {        
+    while (1) {  
+        // Delay for 7ms to simulate the algorithm execution time
+        tmr_wait_ms(1, 7);
+            
         // Check if a character is available from UART2
         if (U2STAbits.URXDA) {
             // Read the character from UART2
             receivedChar = U2RXREG;
 
-            // Display the received character on the first row of the LCD
-            lcd_write(0, &receivedChar);
-            charCount++;
+            // Store the character in the circular buffer if there's space
+            if (charCount < BUFFER_SIZE) {
+                circularBuffer[writeIndex] = receivedChar;
+                lcd_write(charCount, &receivedChar);
+                writeIndex = (writeIndex + 1) % BUFFER_SIZE; 
+                charCount++;
+            }
 
             // Check for CR or LF characters
             if (receivedChar == '\r' || receivedChar == '\n') {
                 // Clear the first row of the LCD
                 lcd_clear(0, 16);
+                readIndex = 0;
+                writeIndex = 0;
                 charCount = 0;
             }
 
             // Convert the charCount to a string and display it on the second row
             //sprintf(charCountStr, "Char Recv: %d", charCount);
             //lcd_write(16, charCountStr);
-
-            // Delay for 7ms to simulate the algorithm execution time
-            tmr_wait_ms(1, 7);
+            //lcd_clear(0, 16);
     }
     
     
