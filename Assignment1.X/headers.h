@@ -13,13 +13,13 @@
 // Definition of timers.
 #define TIMER1 1 
 #define TIMER2 2
+#define BUFFER_SIZE 64 // Define the size of the circular buffer
 
 typedef struct {
-    char * const buffer;
+    char buffer[BUFFER_SIZE];
     int head;
     int tail;
-    const int maxlen;
-} cb;
+} CircularBuffer;
 
 // Definition of Timer related functions
 void tmr_setup_period(int timer, int ms); 
@@ -37,7 +37,7 @@ void uart_setup();
 void uart_write(char str[]);
 
 // Definition for Circular Buffer related functions
-int cb_push(volatile cb *c, char data);
-int cb_pop(volatile cb *c, char *data);
+int cb_push(volatile CircularBuffer *cb, char data);
+int cb_pop(volatile CircularBuffer *cb, char *data);
 
 #endif

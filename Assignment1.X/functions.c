@@ -80,7 +80,6 @@ void spi_setup() {
 // Function to move the LCD cursor to the specified position
 void lcd_move_cursor(short position)
 {
-    // The arg "position" goes from 0 to 31. Beyond 15 we need to write on the second line
     // The value 0x80 moves the cursor at the beginning of the first line
     // The value 0xC0 moves the cursor at the beginning of the second line
     
@@ -132,33 +131,36 @@ void uart_write(char str[]) {
 }
 
 // Function to push data into the circular buffer
-int cb_push(volatile cb *c, char data) {
+int cb_push(volatile CircularBuffer *cb, char data) { // WRITE
     int next;
-    next = c->head + 1;  // Calculate where the head will point to after this write.
+    next = cb->head + 1;  // Calculate where the head will point to after this write.
     
-    if (next >= c->maxlen)
+    if (next >= BUFFER_SIZE)
         next = 0;  // Wrap around to the beginning if we've reached the end of the buffer.
 
-    if (next == c->tail)  // If the next position of the head is the same as the tail, the circular buffer is full.
+    if (next == cb->tail)  // If the next position of the head is the same as the tail, the circular buffer is full.
         return -1;  // Return -1 to indicate a failed push (buffer is full).
+    //cosa succede se ritorna -1??
 
-    c->buffer[c->head] = data;  // Load the data into the buffer at the current head position.
-    c->head = next;             // Move the head to the next data offset.
-    return 0;  // Return 0 to indicate a successful push.
+    cb->buffer[cb->head] = data;  // Load the data into the buffer at the current head position.
+    cb->head = next;             // Move the head to the next data offset.
+    return 1;  // Return 1 to indicate a successful push.
 }
 
 // Function to pop data from the circular buffer
-int cb_pop(volatile cb *c, char *data) {
+int cb_pop(volatile CircularBuffer *cb, char *data) { // READ
     int next;
-    if (c->head == c->tail)  // If the head and tail are at the same position, the circular buffer is empty.
+    if (cb->head == cb->tail)  // If the head and tail are at the same position, the circular buffer is empty.
         return -1;  // Return -1 to indicate a failed pop (buffer is empty).
+    //cosa succede se ritorna -1??
 
-    next = c->tail + 1;  // Calculate where the tail will point to after this read.
+    //TODO: capire perche parte dalla posizione 2
+    next = cb->tail + 1;  // Calculate where the tail will point to after this read.
 
-    if (next >= c->maxlen)
+    if (next >= BUFFER_SIZE)
         next = 0;  // Wrap around to the beginning if we've reached the end of the buffer.
 
-    *data = c->buffer[c->tail];  // Read the data from the buffer at the current tail position.
-    c->tail = next;              // Move the tail to the next data offset.
-    return 0;  // Return 0 to indicate a successful pop.
+    *data = cb->buffer[cb->tail];  // Read the data from the buffer at the current tail position.
+    cb->tail = next;              // Move the tail to the next data offset.
+    return 1;  // Return 1 to indicate a successful pop.
 }

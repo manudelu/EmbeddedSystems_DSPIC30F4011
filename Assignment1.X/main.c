@@ -43,9 +43,8 @@
 #include <stdlib.h>
 #include "headers.h"
 
-#define TIMER1 1
-#define TIMER2 2
-#define BUFFER_SIZE 64  // Define the size of the circular buffer
+// Create the CircularBuffer object
+volatile CircularBuffer cb;
 
 // init buttons
 // interrupt S5 & S6
@@ -60,16 +59,14 @@ int main() {
     tmr_setup_period(TIMER1, 10);
     
     // Initialize Circular Buffer Variables
-    cb->head = 0;
-    cb->tail = 0;
-    cb->maxlen = 0;
-    
+    cb.head = 0;
+    cb.tail = 0;    
     
     // Variables to keep track of the received characters and the current position
     char receivedChar;
-    char circularBuffer[BUFFER_SIZE];
-    int readIndex = 0;     // Points to the next character to read
-    int writeIndex = 0;    // Points to the next position to write
+    char readChar;
+    //int readIndex = 0;     // Points to the next character to read
+    //int writeIndex = 0;    // Points to the next position to write
     int charCount = 0;
     
     // Buffer to hold the "Char Recv: XXX" string
@@ -80,37 +77,56 @@ int main() {
     while (1) {  
         // Delay for 7ms to simulate the algorithm execution time
         tmr_wait_ms(TIMER1, 7);
-            
+                 
         // Check if a character is available from UART2
         if (U2STAbits.URXDA) {
             // Read the character from UART2
             receivedChar = U2RXREG;
 
             // Store the character in the circular buffer if there's space
-            if (charCount < BUFFER_SIZE) {
-                circularBuffer[writeIndex] = receivedChar;
-                lcd_write(charCount, &receivedChar);
-                writeIndex = (writeIndex + 1) % BUFFER_SIZE; 
-                charCount++;
+            //if (charCount < BUFFER_SIZE) {
+                
+            //}
+            
+            if (cb_push(&cb, receivedChar)) {
+                if (cb_pop(&cb, &readChar)) {
+                    lcd_write(cb.tail, &readChar);
+                    charCount++;
+                }
+                /*else {
+                    lcd_clear(0x80, 16);
+                }*/
             }
+            /*else { 
+                lcd_clear(0x80, 16);
+            }*/
 
             // Check for CR or LF characters
-            if (receivedChar == '\r' || receivedChar == '\n') {
+            /*if (receivedChar == '\r' || receivedChar == '\n') {
                 // Clear the first row of the LCD
                 lcd_clear(0, 16);
                 readIndex = 0;
                 writeIndex = 0;
                 charCount = 0;
-            }
+            }*/
 
             // Convert the charCount to a string and display it on the second row
             //-
             //sprintf(charCountStr, "Char Recv: %d", charCount);
             //lcd_write(16, charCountStr);
             //lcd_clear(0, 16);
+            
+            /*char ReceivedChar = U2RXREG; // Read char from uart2
+            cb_push(&cb, ReceivedChar); // Push
+
+            if (cb_pop(&cb, &ReceivedChar) == 1) { // If there is a new char that can be read
+                // Write on terminal
+                while(SPI1STATbits.SPITBF == 1); 
+                SPI1BUF = ReceivedChar; // Write the char on the LCD screen
+                cb.tail++; // Go to the next one
+            }*/
+        }
     }
     
-    
-    }
     return 0;
 }
