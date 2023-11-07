@@ -40,11 +40,12 @@
 
 #include <xc.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "headers.h"
 
 #define TIMER1 1
 #define TIMER2 2
-    #define BUFFER_SIZE 64  // Define the size of the circular buffer
+#define BUFFER_SIZE 64  // Define the size of the circular buffer
 
 // init buttons
 // interrupt S5 & S6
@@ -52,28 +53,33 @@
 // S6.onPressed -> clear the first row and reset the characters received counter
 
 int main() {
-    // Variables to keep track of the received characters and the current position
-    char receivedChar;
-    int charCount = 0;
-    
-    char circularBuffer[BUFFER_SIZE];
-    int readIndex = 0;     // Points to the next character to read
-    int writeIndex = 0;    // Points to the next position to write
-
-    
-    // Buffer to hold the "Char Recv: XXX" string
-    char charCountStr[16];
-
     // Initialize the LCD and UART
     spi_setup();
     uart_setup();
     tmr_wait_ms(TIMER1, 1000);  // Wait 1s to start the SPI correctly
     tmr_setup_period(TIMER1, 10);
+    
+    // Initialize Circular Buffer Variables
+    cb->head = 0;
+    cb->tail = 0;
+    cb->maxlen = 0;
+    
+    
+    // Variables to keep track of the received characters and the current position
+    char receivedChar;
+    char circularBuffer[BUFFER_SIZE];
+    int readIndex = 0;     // Points to the next character to read
+    int writeIndex = 0;    // Points to the next position to write
+    int charCount = 0;
+    
+    // Buffer to hold the "Char Recv: XXX" string
+    char charCountStr[16];
+
     lcd_write(16, "Char Recv: "); 
 
     while (1) {  
         // Delay for 7ms to simulate the algorithm execution time
-        tmr_wait_ms(1, 7);
+        tmr_wait_ms(TIMER1, 7);
             
         // Check if a character is available from UART2
         if (U2STAbits.URXDA) {
@@ -98,6 +104,7 @@ int main() {
             }
 
             // Convert the charCount to a string and display it on the second row
+            //-
             //sprintf(charCountStr, "Char Recv: %d", charCount);
             //lcd_write(16, charCountStr);
             //lcd_clear(0, 16);

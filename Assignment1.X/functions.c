@@ -130,3 +130,35 @@ void uart_write(char str[]) {
     for(int i = 0; str[i] != '\0'; i++)
         U2TXREG = str[i];
 }
+
+// Function to push data into the circular buffer
+int cb_push(volatile cb *c, char data) {
+    int next;
+    next = c->head + 1;  // Calculate where the head will point to after this write.
+    
+    if (next >= c->maxlen)
+        next = 0;  // Wrap around to the beginning if we've reached the end of the buffer.
+
+    if (next == c->tail)  // If the next position of the head is the same as the tail, the circular buffer is full.
+        return -1;  // Return -1 to indicate a failed push (buffer is full).
+
+    c->buffer[c->head] = data;  // Load the data into the buffer at the current head position.
+    c->head = next;             // Move the head to the next data offset.
+    return 0;  // Return 0 to indicate a successful push.
+}
+
+// Function to pop data from the circular buffer
+int cb_pop(volatile cb *c, char *data) {
+    int next;
+    if (c->head == c->tail)  // If the head and tail are at the same position, the circular buffer is empty.
+        return -1;  // Return -1 to indicate a failed pop (buffer is empty).
+
+    next = c->tail + 1;  // Calculate where the tail will point to after this read.
+
+    if (next >= c->maxlen)
+        next = 0;  // Wrap around to the beginning if we've reached the end of the buffer.
+
+    *data = c->buffer[c->tail];  // Read the data from the buffer at the current tail position.
+    c->tail = next;              // Move the tail to the next data offset.
+    return 0;  // Return 0 to indicate a successful pop.
+}
