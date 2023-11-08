@@ -51,52 +51,65 @@ volatile CircularBuffer cb;
 // S5.onPressed -> send the number of charachters to the uart2 //U2TXREG = CharNumber
 // S6.onPressed -> clear the first row and reset the characters received counter
 
+void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
+    IFS1bits.U2RXIF = 0;
+    char receivedChar = U2RXREG; // Copy char from received REG
+    cb_push(&cb, receivedChar); // When a new char is received push it
+}
+
 int main() {
     // Initialize the LCD and UART
     spi_setup();
     uart_setup();
     tmr_wait_ms(TIMER1, 1000);  // Wait 1s to start the SPI correctly
-    tmr_setup_period(TIMER1, 10);
+    tmr_setup_period(TIMER2, 10);
     
     // Initialize Circular Buffer Variables
     cb.head = 0;
     cb.tail = 0;    
     
     // Variables to keep track of the received characters and the current position
-    char receivedChar;
+    //char receivedChar;
     char readChar;
     //int readIndex = 0;     // Points to the next character to read
-    //int writeIndex = 0;    // Points to the next position to write
+    int writeIndex = 0;    // Points to the next position to write
     int charCount = 0;
     
     // Buffer to hold the "Char Recv: XXX" string
     char charCountStr[16];
-
-    lcd_write(16, "Char Recv: "); 
+    
+    //lcd_write(16, "Char Recv: "); 
 
     while (1) {  
         // Delay for 7ms to simulate the algorithm execution time
-        tmr_wait_ms(TIMER1, 7);
+        tmr_wait_ms(TIMER2, 7);
+        
+        // Check Overflow
+        /*TRISBbits.TRISB0 = 0; // Set the LED as OUT
+        if (U2STAbits.OERR == 1) { // Was it pressed before?
+            LATBbits.LATB0 = 1;
+        }*/
                  
         // Check if a character is available from UART2
-        if (U2STAbits.URXDA) {
+        //if (U2STAbits.URXDA) {
             // Read the character from UART2
-            receivedChar = U2RXREG;
+            //receivedChar = U2RXREG;
 
             // Store the character in the circular buffer if there's space
             //if (charCount < BUFFER_SIZE) {
                 
             //}
             
-            if (cb_push(&cb, receivedChar)) {
-                if (cb_pop(&cb, &readChar)) {
-                    lcd_write(cb.tail, &readChar);
-                    charCount++;
+            //if (cb_push(&cb, receivedChar)) {
+                if (cb_pop(&cb, &readChar) == 1) {
+                    lcd_write(writeIndex, &readChar);
+                    writeIndex++;
+                    //charCount++;
                 }
                 /*else {
                     lcd_clear(0x80, 16);
                 }*/
-            }
+            //}
             /*else { 
                 lcd_clear(0x80, 16);
             }*/
@@ -125,7 +138,7 @@ int main() {
                 SPI1BUF = ReceivedChar; // Write the char on the LCD screen
                 cb.tail++; // Go to the next one
             }*/
-        }
+        //}
     }
     
     return 0;

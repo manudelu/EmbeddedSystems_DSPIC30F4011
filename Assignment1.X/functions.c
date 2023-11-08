@@ -80,15 +80,20 @@ void spi_setup() {
 // Function to move the LCD cursor to the specified position
 void lcd_move_cursor(short position)
 {
-    // The value 0x80 moves the cursor at the beginning of the first line
-    // The value 0xC0 moves the cursor at the beginning of the second line
+    // 0x80 = start of first line
+    // 0xC0 = start of second line
     
-    // Wait until the SPI Transmit Buffer is not full
-    while (SPI1STATbits.SPITBF == 1); 
-    if (position < 16)
-        SPI1BUF = 0x80 + position;
-    else 
-        SPI1BUF = 0xC0 + (position%16);
+    // Wait until the SPI Transmit Buffer is not full 
+    while (SPI1STATbits.SPITBF == 1);
+    if (position == 16)
+        position = 0;
+    //else 
+    //    SPI1BUF = 0xC0 + (position % 16);
+    SPI1BUF = 0x80 + (position % 16);
+    /*if (position < 16)
+        SPI1BUF = 0x80 + (position % 16);
+    /else
+        SPI1BUF = 0xC0 + (position % 16);*/
 }
 
 // Function to write a string on the LCD starting at a specified position
@@ -116,11 +121,11 @@ void lcd_clear(short start, short n){
 
 // Setup for the Universal Asynchronous Receiver-Transmitter (UART) peripheral
 void uart_setup() {
+    //U2STAbits.URXISEL = 3; // Mi sa un char alla volta //Set interrupt when buffer is 3/4 full
     U2BRG = 11;               // (7372800 / 4) / (16 * 9600)
     U2MODEbits.UARTEN = 1;    // Enable UART 
     U2STAbits.UTXEN = 1;      // Enable Transmission (must be after UARTEN)
     // It will trigger the interrupt when 3/4 of the UART buffer is full
-    U2STAbits.URXISEL = 0b10; // Set interrupt when buffer is 3/4 full
     IEC1bits.U2RXIE = 1;      // Enable UART receiver interrupt
 }
 
@@ -132,35 +137,30 @@ void uart_write(char str[]) {
 
 // Function to push data into the circular buffer
 int cb_push(volatile CircularBuffer *cb, char data) { // WRITE
-    int next;
-    next = cb->head + 1;  // Calculate where the head will point to after this write.
-    
-    if (next >= BUFFER_SIZE)
-        next = 0;  // Wrap around to the beginning if we've reached the end of the buffer.
-
-    if (next == cb->tail)  // If the next position of the head is the same as the tail, the circular buffer is full.
+    /*if (cb->head == cb->tail)  // If the next position of the head is the same as the tail, the circular buffer is full.
         return -1;  // Return -1 to indicate a failed push (buffer is full).
-    //cosa succede se ritorna -1??
-
+    //cosa succede se ritorna -1??*/
+    
     cb->buffer[cb->head] = data;  // Load the data into the buffer at the current head position.
-    cb->head = next;             // Move the head to the next data offset.
-    return 1;  // Return 1 to indicate a successful push.
+    cb->head++;             // Move the head to the next data offset.
+    
+    if (cb->head == BUFFER_SIZE)
+        cb->head = 0;  // Wrap around to the beginning if we've reached the end of the buffer.
+
+    //return 1;  // Return 1 to indicate a successful push.
 }
 
 // Function to pop data from the circular buffer
 int cb_pop(volatile CircularBuffer *cb, char *data) { // READ
-    int next;
     if (cb->head == cb->tail)  // If the head and tail are at the same position, the circular buffer is empty.
-        return -1;  // Return -1 to indicate a failed pop (buffer is empty).
+        return 0;  // Return -1 to indicate a failed pop (buffer is empty).
     //cosa succede se ritorna -1??
-
-    //TODO: capire perche parte dalla posizione 2
-    next = cb->tail + 1;  // Calculate where the tail will point to after this read.
-
-    if (next >= BUFFER_SIZE)
-        next = 0;  // Wrap around to the beginning if we've reached the end of the buffer.
-
+    
     *data = cb->buffer[cb->tail];  // Read the data from the buffer at the current tail position.
-    cb->tail = next;              // Move the tail to the next data offset.
+    cb->tail++;              // Move the tail to the next data offset.
+
+    if (cb->tail == BUFFER_SIZE)
+        cb->tail = 0;  // Wrap around to the beginning if we've reached the end of the buffer.
+    
     return 1;  // Return 1 to indicate a successful pop.
 }
