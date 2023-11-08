@@ -92,27 +92,23 @@ int main() {
                  
         // Check if a character is available from UART2
         //if (U2STAbits.URXDA) {
-            // Read the character from UART2
-            //receivedChar = U2RXREG;
-
-            // Store the character in the circular buffer if there's space
-            //if (charCount < BUFFER_SIZE) {
-                
-            //}
             
             //if (cb_push(&cb, receivedChar)) {
                 if (cb_pop(&cb, &readChar) == 1) {
                     lcd_write(writeIndex, &readChar);
                     writeIndex++;
-                    //charCount++;
+                    charCount++;
+                    if (writeIndex == 16)
+                        writeIndex = 0;
                 }
                 /*else {
-                    lcd_clear(0x80, 16);
+                    lcd_clear(0, 16); //???
                 }*/
+        
+                // Convert the charCount to a string and display it on the second row
+                /*sprintf(charCountStr, "Char Recv: %d", charCount);
+                lcd_write(16, charCountStr);*/
             //}
-            /*else { 
-                lcd_clear(0x80, 16);
-            }*/
 
             // Check for CR or LF characters
             /*if (receivedChar == '\r' || receivedChar == '\n') {
@@ -122,22 +118,7 @@ int main() {
                 writeIndex = 0;
                 charCount = 0;
             }*/
-
-            // Convert the charCount to a string and display it on the second row
-            //-
-            //sprintf(charCountStr, "Char Recv: %d", charCount);
-            //lcd_write(16, charCountStr);
-            //lcd_clear(0, 16);
-            
-            /*char ReceivedChar = U2RXREG; // Read char from uart2
-            cb_push(&cb, ReceivedChar); // Push
-
-            if (cb_pop(&cb, &ReceivedChar) == 1) { // If there is a new char that can be read
-                // Write on terminal
-                while(SPI1STATbits.SPITBF == 1); 
-                SPI1BUF = ReceivedChar; // Write the char on the LCD screen
-                cb.tail++; // Go to the next one
-            }*/
+        
         //}
     }
     

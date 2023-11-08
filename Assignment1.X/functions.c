@@ -85,15 +85,10 @@ void lcd_move_cursor(short position)
     
     // Wait until the SPI Transmit Buffer is not full 
     while (SPI1STATbits.SPITBF == 1);
-    if (position == 16)
-        position = 0;
-    //else 
-    //    SPI1BUF = 0xC0 + (position % 16);
-    SPI1BUF = 0x80 + (position % 16);
-    /*if (position < 16)
+    if (position < 16)
         SPI1BUF = 0x80 + (position % 16);
-    /else
-        SPI1BUF = 0xC0 + (position % 16);*/
+    else
+        SPI1BUF = 0xC0 + (position % 16);
 }
 
 // Function to write a string on the LCD starting at a specified position
@@ -104,7 +99,7 @@ void lcd_write(short start, char str[]){
     // Iterate through the string and write each character to the LCD
     for(int i = 0; str[i] != '\0'; i++) {
         // Wait until the SPI Transmit Buffer is not full
-        while (SPI1STATbits.SPITBF == 1) {}; 
+        while (SPI1STATbits.SPITBF == 1); 
         SPI1BUF = str[i];
     }
 }
