@@ -63,14 +63,14 @@ int main() {
     spi_setup();
     uart_setup();
     tmr_wait_ms(TIMER1, 1000);  // Wait 1s to start the SPI correctly
+    tmr_setup_period(TIMER2, 100);
     
     // Initialize Circular Buffer Variables
     cb.head = 0;
     cb.tail = 0;    
     
     // Variables to keep track of the received characters and the current position
-    //char receivedChar;
-    char readChar[16];
+    char readChar[cb.tail];
     //int readIndex = 0;     // Points to the next character to read
     int writeIndex = 0;    // Points to the next position to write
     int charCount = 0;
@@ -94,7 +94,8 @@ int main() {
         int read = cb_pop(&cb, &readChar);
         
         if (read == 1) {
-            lcd_write(writeIndex, readChar);
+            lcd_move_cursor(writeIndex);
+            lcd_write(writeIndex, &readChar);
             writeIndex++;
             charCount++;
             // Check for CR or LF characters, vedi se va qui davvero
@@ -102,12 +103,15 @@ int main() {
             if (readChar == '\r' || readChar == '\n' || writeIndex == 0) { // sistema "\"?
                 // Clear the first row of the LCD
                 lcd_clear(0, 16); //vedi
-                charCount = 0;
+                //charCount = 0;
+                //lcd_clear(16, 16);
             }
             // Convert the charCount to a string and display it on the second row
-            /*sprintf(charCountStr, "Char Recv: %d", charCount);
-            lcd_write(16, charCountStr);*/
-            
+            sprintf(charCountStr, "Char Recv: %d", charCount);
+            lcd_write(16, charCountStr);
+        }
+        else {
+            LATBbits.LATB0 = 1;
         }
         
     }

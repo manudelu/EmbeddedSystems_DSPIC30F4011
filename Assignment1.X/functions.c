@@ -82,19 +82,19 @@ void spi_setup() {
 }
 
 // Function to move the LCD cursor to the specified position
-/*void lcd_move_cursor(short position, short row)
+void lcd_move_cursor(short position)
 {
     // 0x80 = start of first line
     // 0xC0 = start of second line
     
     // Wait until the SPI Transmit Buffer is not full 
     // while (SPI1STATbits.SPITBF == 1); //boh vedi
-    if (row == 1)
+    if (position < 16)
         SPI1BUF = 0x80 + position;
     else 
-        SPI1BUF = 0xC0 + position;
-}*/
-
+        SPI1BUF = 0xC0 + position % 16;
+}
+/*
 // Function to move the LCD cursor to the specified position
 void lcd_move_cursor_first_row(short position)
 {
@@ -102,7 +102,7 @@ void lcd_move_cursor_first_row(short position)
     // 0xC0 = start of second line
     
     // Wait until the SPI Transmit Buffer is not full 
-    while (SPI1STATbits.SPITBF == 1); //boh vedi
+    // while (SPI1STATbits.SPITBF == 1); //boh vedi
     SPI1BUF = 0x80 + position;
 }
 
@@ -113,18 +113,14 @@ void lcd_move_cursor_second_row(short position)
     // 0xC0 = start of second line
     
     // Wait until the SPI Transmit Buffer is not full 
-    while (SPI1STATbits.SPITBF == 1); //boh vedi
+    // while (SPI1STATbits.SPITBF == 1); //boh vedi
     SPI1BUF = 0xC0 + position % 16;
-}
+}*/
 
 // Function to write a string on the LCD starting at a specified position
-void lcd_write(short start, char str[]){
-    if (start >= 16) 
-    // Move the cursor to the specified starting position
-        lcd_move_cursor_second_row(start);
-    else
-        lcd_move_cursor_first_row(start);
-    // in caso cambia con if FIRST_ROW, else
+void lcd_write(short start, char str[]) {
+    
+    lcd_move_cursor(start);
     
     // Iterate through the string and write each character to the LCD
     for(int i = 0; str[i] != '\0'; i++) {
