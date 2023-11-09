@@ -120,7 +120,7 @@ void lcd_clear(short start, short n){
 
 // Setup for the Universal Asynchronous Receiver-Transmitter (UART) peripheral
 void uart_setup() {
-    //U2STAbits.URXISEL = 3; // Mi sa un char alla volta //Set interrupt when buffer is 3/4 full
+    //U2STAbits.URXISEL = 3; // MAI USATA CON INTERRUPT //Set interrupt when buffer is 3/4 full
     U2BRG = 11;               // (7372800 / 4) / (16 * 9600)
     U2MODEbits.UARTEN = 1;    // Enable UART 
     U2STAbits.UTXEN = 1;      // Enable Transmission (must be after UARTEN)
@@ -129,6 +129,7 @@ void uart_setup() {
 }
 
 // Function used for transmitting data over a UART
+// CHECK PERCHE NON VIENE MAI USATA
 void uart_write(char str[]) {
     for(int i = 0; str[i] != '\0'; i++)
         U2TXREG = str[i];

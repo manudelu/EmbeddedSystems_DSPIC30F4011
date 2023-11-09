@@ -70,7 +70,7 @@ int main() {
     cb.tail = 0;    
     
     // Variables to keep track of the received characters and the current position
-    char readChar[cb.tail];
+    char readChar[cb.tail]; //USARE BUFFER DEL CB???
     //int readIndex = 0;     // Points to the next character to read
     int writeIndex = 0;    // Points to the next position to write
     int charCount = 0;
@@ -102,6 +102,7 @@ int main() {
             writeIndex = writeIndex % 16;
             
             // Clear the first row of the LCD
+            // VA BENE USARE QUESTO FOR???
             for (int i = 0; readChar[i] != '\0'; i++) {
                 if (readChar[i] == '\r' || readChar[i] == '\n' || writeIndex == 0) {
                     //LATBbits.LATB0 = 1;
