@@ -91,11 +91,11 @@ int main() {
             LATBbits.LATB0 = 1;
         }*/
         
-        int read = cb_pop(&cb, &readChar);
+        int read = cb_pop(&cb, &readChar); //FORSE QUI MEGLIO USARE IL BUFFER STESSO NELLA POSE TAIL ANZICHE LA STRINGA
         
         if (read == 1) {
             lcd_move_cursor(writeIndex);
-            lcd_write(writeIndex, readChar);
+            lcd_write(writeIndex, readChar); //FORSE QUI MEGLIO USARE IL BUFFER STESSO NELLA POSE TAIL ANZICHE LA STRINGA
             writeIndex++;
             charCount++;
             
