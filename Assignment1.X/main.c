@@ -55,6 +55,7 @@ void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
     IFS1bits.U2RXIF = 0;
     char receivedChar = U2RXREG; // Copy char from received REG
     cb_push(&cb, receivedChar); // When a new char is received push it
+    U2TXREG = receivedChar; //vedi i char che arrivano
 }
 
 int main() {
@@ -62,7 +63,6 @@ int main() {
     spi_setup();
     uart_setup();
     tmr_wait_ms(TIMER1, 1000);  // Wait 1s to start the SPI correctly
-    tmr_setup_period(TIMER2, 10);
     
     // Initialize Circular Buffer Variables
     cb.head = 0;
@@ -70,7 +70,7 @@ int main() {
     
     // Variables to keep track of the received characters and the current position
     //char receivedChar;
-    char readChar;
+    char readChar[16];
     //int readIndex = 0;     // Points to the next character to read
     int writeIndex = 0;    // Points to the next position to write
     int charCount = 0;
@@ -78,48 +78,38 @@ int main() {
     // Buffer to hold the "Char Recv: XXX" string
     char charCountStr[16];
     
-    //lcd_write(16, "Char Recv: "); 
+    //TRISBbits.TRISB0 = 0; // Set the LED as OUT
 
     while (1) {  
         // Delay for 7ms to simulate the algorithm execution time
-        tmr_wait_ms(TIMER2, 7);
+        algorithm();
         
         // Check Overflow
-        /*TRISBbits.TRISB0 = 0; // Set the LED as OUT
-        if (U2STAbits.OERR == 1) { // Was it pressed before?
+        /*if (U2STAbits.OERR == 1) { // Was it pressed before?
             LATBbits.LATB0 = 1;
         }*/
                  
         // Check if a character is available from UART2
-        //if (U2STAbits.URXDA) {
-            
-            //if (cb_push(&cb, receivedChar)) {
-                if (cb_pop(&cb, &readChar) == 1) {
-                    lcd_write(writeIndex, &readChar);
-                    writeIndex++;
-                    charCount++;
-                    if (writeIndex == 16)
-                        writeIndex = 0;
-                }
-                /*else {
-                    lcd_clear(0, 16); //???
-                }*/
         
-                // Convert the charCount to a string and display it on the second row
-                /*sprintf(charCountStr, "Char Recv: %d", charCount);
-                lcd_write(16, charCountStr);*/
-            //}
-
-            // Check for CR or LF characters
-            /*if (receivedChar == '\r' || receivedChar == '\n') {
+        int read = cb_pop(&cb, &readChar);
+        
+        if (read == 1) {
+            lcd_write(writeIndex, readChar);
+            writeIndex++;
+            charCount++;
+            // Check for CR or LF characters, vedi se va qui davvero
+            writeIndex = writeIndex % 16;
+            if (readChar == '\r' || readChar == '\n' || writeIndex == 0) { // sistema "\"?
                 // Clear the first row of the LCD
-                lcd_clear(0, 16);
-                readIndex = 0;
-                writeIndex = 0;
+                lcd_clear(0, 16); //vedi
                 charCount = 0;
-            }*/
+            }
+            // Convert the charCount to a string and display it on the second row
+            /*sprintf(charCountStr, "Char Recv: %d", charCount);
+            lcd_write(16, charCountStr);*/
+            
+        }
         
-        //}
     }
     
     return 0;

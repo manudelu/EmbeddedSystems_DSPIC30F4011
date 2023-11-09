@@ -14,6 +14,8 @@
 #define TIMER1 1 
 #define TIMER2 2
 #define BUFFER_SIZE 64 // Define the size of the circular buffer
+#define FIRST_ROW 1
+#define SECOND_ROW 2
 
 typedef struct {
     char buffer[BUFFER_SIZE];
@@ -22,13 +24,15 @@ typedef struct {
 } CircularBuffer;
 
 // Definition of Timer related functions
+void algorithm();
 void tmr_setup_period(int timer, int ms); 
 void tmr_wait_period(int timer);
 void tmr_wait_ms(int timer, int ms);
 
 // Definition of SPI related functions
 void spi_setup();
-void lcd_move_cursor(short position);
+void lcd_move_cursor_first_row(short position);
+void lcd_move_cursor_second_row(short position);
 void lcd_write(short start, char str[]);
 void lcd_clear(short start, short n);
 
@@ -37,7 +41,7 @@ void uart_setup();
 void uart_write(char str[]);
 
 // Definition for Circular Buffer related functions
-int cb_push(volatile CircularBuffer *cb, char data);
+void cb_push(volatile CircularBuffer *cb, char data);
 int cb_pop(volatile CircularBuffer *cb, char *data);
 
 #endif

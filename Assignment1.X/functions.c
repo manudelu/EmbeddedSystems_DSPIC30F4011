@@ -9,6 +9,10 @@
 #include "xc.h"
 #include "headers.h"
 
+void algorithm() {
+    tmr_wait_ms(TIMER2, 7);
+}
+
 // Function that setups the timer to count for the specified amount of ms
 void tmr_setup_period(int timer, int ms) {    
     // Fcy = Fosc / 4 = 7.3728 MHz / 4 = 1843200 Hz -> 1843.2 clock steps in 1 ms
@@ -78,23 +82,49 @@ void spi_setup() {
 }
 
 // Function to move the LCD cursor to the specified position
-void lcd_move_cursor(short position)
+/*void lcd_move_cursor(short position, short row)
 {
     // 0x80 = start of first line
     // 0xC0 = start of second line
     
     // Wait until the SPI Transmit Buffer is not full 
-    while (SPI1STATbits.SPITBF == 1);
-    if (position < 16)
-        SPI1BUF = 0x80 + (position % 16);
-    else
-        SPI1BUF = 0xC0 + (position % 16);
+    // while (SPI1STATbits.SPITBF == 1); //boh vedi
+    if (row == 1)
+        SPI1BUF = 0x80 + position;
+    else 
+        SPI1BUF = 0xC0 + position;
+}*/
+
+// Function to move the LCD cursor to the specified position
+void lcd_move_cursor_first_row(short position)
+{
+    // 0x80 = start of first line
+    // 0xC0 = start of second line
+    
+    // Wait until the SPI Transmit Buffer is not full 
+    while (SPI1STATbits.SPITBF == 1); //boh vedi
+    SPI1BUF = 0x80 + position;
+}
+
+// Function to move the LCD cursor to the specified position
+void lcd_move_cursor_second_row(short position)
+{
+    // 0x80 = start of first line
+    // 0xC0 = start of second line
+    
+    // Wait until the SPI Transmit Buffer is not full 
+    while (SPI1STATbits.SPITBF == 1); //boh vedi
+    SPI1BUF = 0xC0 + position % 16;
 }
 
 // Function to write a string on the LCD starting at a specified position
 void lcd_write(short start, char str[]){
+    if (start >= 16) 
     // Move the cursor to the specified starting position
-    lcd_move_cursor(start);
+        lcd_move_cursor_second_row(start);
+    else
+        lcd_move_cursor_first_row(start);
+    // in caso cambia con if FIRST_ROW, else
     
     // Iterate through the string and write each character to the LCD
     for(int i = 0; str[i] != '\0'; i++) {
@@ -130,8 +160,9 @@ void uart_write(char str[]) {
         U2TXREG = str[i];
 }
 
+// void vedi
 // Function to push data into the circular buffer
-int cb_push(volatile CircularBuffer *cb, char data) { // WRITE
+void cb_push(volatile CircularBuffer *cb, char data) { // WRITE
     /*if (cb->head == cb->tail)  // If the next position of the head is the same as the tail, the circular buffer is full.
         return -1;  // Return -1 to indicate a failed push (buffer is full).
     //cosa succede se ritorna -1??*/
