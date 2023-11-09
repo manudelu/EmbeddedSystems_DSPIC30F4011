@@ -55,7 +55,7 @@ void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
     IFS1bits.U2RXIF = 0;
     char receivedChar = U2RXREG; // Copy char from received REG
     cb_push(&cb, receivedChar); // When a new char is received push it
-    U2TXREG = receivedChar; //vedi i char che arrivano
+    //U2TXREG = receivedChar; //vedi i char che arrivano
 }
 
 int main() {
@@ -63,7 +63,7 @@ int main() {
     spi_setup();
     uart_setup();
     tmr_wait_ms(TIMER1, 1000);  // Wait 1s to start the SPI correctly
-    tmr_setup_period(TIMER2, 100);
+    //tmr_setup_period(TIMER2, 100);
     
     // Initialize Circular Buffer Variables
     cb.head = 0;
@@ -78,7 +78,9 @@ int main() {
     // Buffer to hold the "Char Recv: XXX" string
     char charCountStr[16];
     
-    //TRISBbits.TRISB0 = 0; // Set the LED as OUT
+    TRISBbits.TRISB0 = 0; // Set the LED as OUT
+    
+    lcd_write(16, "Char Recv: ");
 
     while (1) {  
         // Delay for 7ms to simulate the algorithm execution time
@@ -88,32 +90,35 @@ int main() {
         /*if (U2STAbits.OERR == 1) { // Was it pressed before?
             LATBbits.LATB0 = 1;
         }*/
-                 
-        // Check if a character is available from UART2
         
         int read = cb_pop(&cb, &readChar);
         
         if (read == 1) {
             lcd_move_cursor(writeIndex);
-            lcd_write(writeIndex, &readChar);
+            lcd_write(writeIndex, readChar);
             writeIndex++;
             charCount++;
-            // Check for CR or LF characters, vedi se va qui davvero
+            
             writeIndex = writeIndex % 16;
-            if (readChar == '\r' || readChar == '\n' || writeIndex == 0) { // sistema "\"?
-                // Clear the first row of the LCD
-                lcd_clear(0, 16); //vedi
-                //charCount = 0;
-                //lcd_clear(16, 16);
+            
+            // Clear the first row of the LCD
+            for (int i = 0; readChar[i] != '\0'; i++) {
+                if (readChar[i] == '\r' || readChar[i] == '\n' || writeIndex == 0) {
+                    //LATBbits.LATB0 = 1;
+                    lcd_clear(0, 16); //vedi
+                    writeIndex = 0;
+                }
             }
+            
             // Convert the charCount to a string and display it on the second row
             sprintf(charCountStr, "Char Recv: %d", charCount);
             lcd_write(16, charCountStr);
         }
-        else {
+        /*else {
             LATBbits.LATB0 = 1;
-        }
+        }*/      
         
+        lcd_move_cursor(writeIndex); // Set cursor at the desired position
     }
     
     return 0;

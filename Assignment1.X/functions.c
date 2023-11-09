@@ -94,28 +94,6 @@ void lcd_move_cursor(short position)
     else 
         SPI1BUF = 0xC0 + position % 16;
 }
-/*
-// Function to move the LCD cursor to the specified position
-void lcd_move_cursor_first_row(short position)
-{
-    // 0x80 = start of first line
-    // 0xC0 = start of second line
-    
-    // Wait until the SPI Transmit Buffer is not full 
-    // while (SPI1STATbits.SPITBF == 1); //boh vedi
-    SPI1BUF = 0x80 + position;
-}
-
-// Function to move the LCD cursor to the specified position
-void lcd_move_cursor_second_row(short position)
-{
-    // 0x80 = start of first line
-    // 0xC0 = start of second line
-    
-    // Wait until the SPI Transmit Buffer is not full 
-    // while (SPI1STATbits.SPITBF == 1); //boh vedi
-    SPI1BUF = 0xC0 + position % 16;
-}*/
 
 // Function to write a string on the LCD starting at a specified position
 void lcd_write(short start, char str[]) {
