@@ -14,13 +14,12 @@
 #define TIMER1 1 
 #define TIMER2 2
 #define BUFFER_SIZE 16 // Define the size of the circular buffer, ERROR IN COUNT
-#define FIRST_ROW 1
-#define SECOND_ROW 2
 
 typedef struct {
     char buffer[BUFFER_SIZE];
     int head;
     int tail;
+    int count;
 } CircularBuffer;
 
 // Definition of Timer related functions

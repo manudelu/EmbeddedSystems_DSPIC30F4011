@@ -144,6 +144,7 @@ void cb_push(volatile CircularBuffer *cb, char data) { // WRITE
     
     cb->buffer[cb->head] = data;  // Load the data into the buffer at the current head position.
     cb->head++;             // Move the head to the next data offset.
+    cb->count++;
     
     if (cb->head == BUFFER_SIZE)
         cb->head = 0;  // Wrap around to the beginning if we've reached the end of the buffer.
