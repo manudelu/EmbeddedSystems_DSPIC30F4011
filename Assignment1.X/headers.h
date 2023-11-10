@@ -13,7 +13,7 @@
 // Definition of timers.
 #define TIMER1 1 
 #define TIMER2 2
-#define BUFFER_SIZE 64 // Define the size of the circular buffer
+#define BUFFER_SIZE 16 // Define the size of the circular buffer, ERROR IN COUNT
 #define FIRST_ROW 1
 #define SECOND_ROW 2
 

@@ -45,7 +45,7 @@ void tmr_setup_period(int timer, int ms) {
         T1CONbits.TON = 1;      // Starts the timer
     }
     else if (timer == 2) {
-        T1CONbits.TON = 0;       // Stops the timer
+        T2CONbits.TON = 0;       // Stops the timer
         TMR2 = 0;                // Reset timer counter
         T2CONbits.TCKPS = t;     // Set the prescaler 
         PR2 = steps/presc;       // Set the number of clock step of the counter
@@ -130,17 +130,17 @@ void uart_setup() {
 
 // Function used for transmitting data over a UART
 // CHECK PERCHE NON VIENE MAI USATA
-void uart_write(char str[]) {
+/*void uart_write(char str[]) {
     for(int i = 0; str[i] != '\0'; i++)
         U2TXREG = str[i];
-}
+}*/
 
 // void vedi
 // Function to push data into the circular buffer
 void cb_push(volatile CircularBuffer *cb, char data) { // WRITE
     /*if (cb->head == cb->tail)  // If the next position of the head is the same as the tail, the circular buffer is full.
         return -1;  // Return -1 to indicate a failed push (buffer is full).
-    //cosa succede se ritorna -1??*/
+    //CON -1 SI HA UN OVERFLOW ???*/
     
     cb->buffer[cb->head] = data;  // Load the data into the buffer at the current head position.
     cb->head++;             // Move the head to the next data offset.

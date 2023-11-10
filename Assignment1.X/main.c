@@ -45,6 +45,8 @@
 
 // Create the CircularBuffer object
 volatile CircularBuffer cb;
+volatile short S5onPressed = 0;
+volatile short S6onPressed = 0;
 
 // init buttons
 // interrupt S5 & S6
@@ -55,22 +57,36 @@ void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
     IFS1bits.U2RXIF = 0;
     char receivedChar = U2RXREG; // Copy char from received REG
     cb_push(&cb, receivedChar); // When a new char is received push it
-    //U2TXREG = receivedChar; //vedi i char che arrivano
+    U2TXREG = receivedChar; //vedi i char che arrivano
 }
+
+/*void __attribute__((__interrupt__, __auto_psv__)) _INT0Interrupt() {
+    IFS0bits.INT0IF = 0;
+ * 
+ * //set the various timer to prevent button bouncing
+}*/
+
+/*void __attribute__((__interrupt__, __auto_psv__)) _INT1Interrupt() {
+    IFS1bits.INT1IF = 0;
+ * 
+ * //set the various timer to prevent button bouncing
+}*/
 
 int main() {
     // Initialize the LCD and UART
     spi_setup();
     uart_setup();
     tmr_wait_ms(TIMER1, 1000);  // Wait 1s to start the SPI correctly
-    //tmr_setup_period(TIMER2, 100);
+    tmr_setup_period(TIMER2, 10); // Period definition
     
     // Initialize Circular Buffer Variables
     cb.head = 0;
     cb.tail = 0;    
     
     // Variables to keep track of the received characters and the current position
-    char readChar[cb.tail]; //USARE BUFFER DEL CB???
+    
+    //TODO
+    char readChar[cb.tail]; //USARE BUFFER DEL CB??? OPPURE UN CHAR SINGOLO QUANTOMENO
     //int readIndex = 0;     // Points to the next character to read
     int writeIndex = 0;    // Points to the next position to write
     int charCount = 0;
@@ -78,7 +94,11 @@ int main() {
     // Buffer to hold the "Char Recv: XXX" string
     char charCountStr[16];
     
-    TRISBbits.TRISB0 = 0; // Set the LED as OUT
+    //IEC0bits.INT0IE = 1; // enable INT0 interrupt!
+    //IEC1bits.INT1IE = 1; // enable INT1 interrupt!
+    
+    TRISBbits.TRISB0 = 0; // Set the LED D3 as OUT
+    TRISBbits.TRISB1 = 0; // Set the LED D4 as OUT
     
     lcd_write(16, "Char Recv: ");
 
@@ -91,6 +111,14 @@ int main() {
             LATBbits.LATB0 = 1;
         }*/
         
+        //if (U2STAbits.URXDA == 1) { //???
+        
+        //non capisco perche ma a quanto pare serve, idk //TODO
+        // BOH MAGARI è PER QUESTO CHE CI SERVE LA STRINGA AL POSTO DEL SINGOLO CHAR
+        /*IEC1bits.U2RXIE = 0;
+        int read = cb_pop(&cb, &readChar); //READ DATA FROM BUFFER
+        IEC1bits.U2RXIE = 1;*/
+        
         int read = cb_pop(&cb, &readChar); //FORSE QUI MEGLIO USARE IL BUFFER STESSO NELLA POSE TAIL ANZICHE LA STRINGA
         
         if (read == 1) {
@@ -99,27 +127,42 @@ int main() {
             writeIndex++;
             charCount++;
             
-            writeIndex = writeIndex % 16;
+            writeIndex = writeIndex % 16; // when it reaches the end go back to the start
             
             // Clear the first row of the LCD
             // VA BENE USARE QUESTO FOR???
             for (int i = 0; readChar[i] != '\0'; i++) {
                 if (readChar[i] == '\r' || readChar[i] == '\n' || writeIndex == 0) {
-                    //LATBbits.LATB0 = 1;
-                    lcd_clear(0, 16); //vedi
+                    lcd_clear(0, 16);
                     writeIndex = 0;
                 }
             }
             
             // Convert the charCount to a string and display it on the second row
-            sprintf(charCountStr, "Char Recv: %d", charCount);
+            sprintf(charCountStr, "Char Recv: %d", charCount); //ERROR IN COUNT
             lcd_write(16, charCountStr);
         }
+        //}
         /*else {
             LATBbits.LATB0 = 1;
-        }*/      
+        }*/   
+        
+        //TODO
+        /*if(IFS0bits.INT0IF == 1){
+            U2TXREG = charCount;
+            IFS0bits.INT0IF = 0;
+        }*/
+        
+        //TODO
+        /*if(IFS1bits.INT1IF == 1){
+            lcd_clear(0, 16);
+            charCount = 0;
+            writeIndex = 0;
+            IFS1bits.INT1IF = 0;
+        }*/
         
         lcd_move_cursor(writeIndex); // Set cursor at the desired position
+        tmr_wait_period(2); // Wait before next loop
     }
     
     return 0;
