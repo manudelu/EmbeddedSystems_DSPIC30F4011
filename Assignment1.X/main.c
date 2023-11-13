@@ -63,30 +63,21 @@ void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
 
 void __attribute__ ((__interrupt__ , __auto_psv__ ) ) _INT0Interrupt() {
     IFS0bits.INT0IF = 0;
+    IEC0bits.INT0IE = 0; // disable interrupt for INT0
     sprintf(charCount, "%d", cb.count);
     uart_write(charCount);
-    IEC0bits.INT0IE = 0; // disable interrupt for INT0
-    tmr_setup_period(TIMER3, 20); // start timer 2
+    tmr_setup_period(TIMER3, 100); // start timer 3
+    IEC0bits.T3IE = 1; // enable interrupt for T3
 }
-
-/*void __attribute__ ((__interrupt__ , __auto_psv__ ) ) _INT1Interrupt() {
-    IFS1bits.INT1IF = 0;
-    U2TXREG = cb.count; // Funge ma se passo il numero stampa '<3>' (quadratino)
-    IEC0bits.INT0IE = 0; // disable interrupt for INT0
-    tmr_setup_period(TIMER2, 20); // start timer 2
-}*/
 
 void __attribute__ (( __interrupt__ , __auto_psv__ ) ) _T3Interrupt() {
     IFS0bits.T3IF = 0;
-    T3CONbits.TON = 0; // stop timer 3
     IFS0bits.INT0IF = 0; // reset INT0 IF
+    T3CONbits.TON = 0; // stop timer 3
+    TMR3 = 0;
+    IEC0bits.T3IE = 0;
     IEC0bits.INT0IE = 1; // enable interrupt for INT0
 }
-
-/*void __attribute__((__interrupt__, __auto_psv__)) _INT1Interrupt() {
-    IFS1bits.INT1IF = 0;
-    //set the various timer to prevent button bouncing
-}*/
 
 int main() {
     // Initialize the LCD and UART
@@ -99,6 +90,7 @@ int main() {
     cb.head = 0;
     cb.tail = 0;    
     cb.count = 0;
+    cb.to_read = 0;
     
     // Variables to keep track of the received characters and the current position
     char readChar = cb.buffer[cb.tail];
@@ -127,18 +119,10 @@ int main() {
             LATBbits.LATB0 = 1;
         }*/
         
-        //if (U2STAbits.URXDA == 1) { //???
-        
-        IEC0bits.T3IE = 1; // enable interrupt for T3
-        
-        //non capisco perche ma a quanto pare serve, idk //TODO
-        // BOH MAGARI è PER QUESTO CHE CI SERVE LA STRINGA AL POSTO DEL SINGOLO CHAR
         IEC1bits.U2RXIE = 0;
         int read = cb_pop(&cb, &readChar); //READ DATA FROM BUFFER
         IEC1bits.U2RXIE = 1;
-        
-        //int read = cb_pop(&cb, &readChar); //FORSE QUI MEGLIO USARE IL BUFFER STESSO NELLA POSE TAIL ANZICHE LA STRINGA
-        
+                
         if (read == 1) {
             lcd_move_cursor(writeIndex);
             lcd_write(writeIndex, readChar); //FORSE QUI MEGLIO USARE IL BUFFER STESSO NELLA POSE TAIL ANZICHE LA STRINGA
@@ -157,21 +141,16 @@ int main() {
             for (int i=0; charCountStr[i] != '\0'; i++) 
                 lcd_write(i+16, charCountStr[i]);
         }
-        //}
         
-        /*else {
-            LATBbits.LATB0 = 1;
-        }*/   
-        
-        //TODO
-        
-        //TODO
-        /*if(IFS1bits.INT1IF == 1){
-            lcd_clear(0, 16);
-            cb.count = 0;
-            writeIndex = 0;
-            IFS1bits.INT1IF = 0;
-        }*/
+        if(IFS1bits.INT1IF == 1){
+                IFS1bits.INT1IF = 0;
+                cb.count = 0;
+                writeIndex = 0;
+                lcd_clear(0, 32);
+                sprintf(charCountStr, "Char Recv: %d", cb.count);
+                for (int i=0; charCountStr[i] != '\0'; i++) 
+                    lcd_write(i+16, charCountStr[i]);
+            }
         
         lcd_move_cursor(writeIndex); // Set cursor at the desired position
         tmr_wait_period(2); // Wait before next loop

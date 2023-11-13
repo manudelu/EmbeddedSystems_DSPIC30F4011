@@ -51,6 +51,14 @@ void tmr_setup_period(int timer, int ms) {
         PR2 = steps/presc;       // Set the number of clock step of the counter
         T2CONbits.TON = 1;       // Starts the timer
     }
+    else if (timer == 3) {
+        T3CONbits.TON = 0;       // Stops the timer
+        TMR3 = 0;                // Reset timer counter
+        T3CONbits.TCKPS = t;     // Set the prescaler 
+        PR3 = steps/presc;       // Set the number of clock step of the counter
+        IFS0bits.T3IF = 0;
+        T3CONbits.TON = 1;       // Starts the timer
+    }
 }
 
 // Function that uses the timer flag to wait until it has expired
@@ -63,6 +71,10 @@ void tmr_wait_period(int timer) {
     else if (timer == 2) {
         while(IFS0bits.T2IF == 0){};
         IFS0bits.T2IF = 0; // Reset timer2 interrupt flag
+    }
+    else if (timer == 3) {
+        while(IFS0bits.T3IF == 0){};
+        IFS0bits.T3IF = 0; // Reset timer2 interrupt flag
     }
 }
 
@@ -147,6 +159,7 @@ void cb_push(volatile CircularBuffer *cb, char data) { // WRITE
     cb->buffer[cb->head] = data;  // Load the data into the buffer at the current head position.
     cb->head++;             // Move the head to the next data offset.
     cb->count++;
+    cb->to_read++;
     
     if (cb->head == BUFFER_SIZE)
         cb->head = 0;  // Wrap around to the beginning if we've reached the end of the buffer.
@@ -156,12 +169,13 @@ void cb_push(volatile CircularBuffer *cb, char data) { // WRITE
 
 // Function to pop data from the circular buffer
 int cb_pop(volatile CircularBuffer *cb, char *data) { // READ
-    if (cb->head == cb->tail)  // If the head and tail are at the same position, the circular buffer is empty.
+    if (cb->to_read == 0)  // If the circular buffer is empty I can't read anything.
         return 0;  // Return -1 to indicate a failed pop (buffer is empty).
     //cosa succede se ritorna -1??
     
     *data = cb->buffer[cb->tail];  // Read the data from the buffer at the current tail position.
     cb->tail++;              // Move the tail to the next data offset.
+    cb->to_read--;
 
     if (cb->tail == BUFFER_SIZE)
         cb->tail = 0;  // Wrap around to the beginning if we've reached the end of the buffer.
