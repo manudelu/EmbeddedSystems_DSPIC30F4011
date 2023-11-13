@@ -21,6 +21,7 @@ typedef struct {
     int head;
     int tail;
     int count;
+    int to_read;
 } CircularBuffer;
 
 // Definition of Timer related functions

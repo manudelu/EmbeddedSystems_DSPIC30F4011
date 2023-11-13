@@ -90,6 +90,7 @@ int main() {
     cb.head = 0;
     cb.tail = 0;    
     cb.count = 0;
+    cb.to_read = 0;
     
     // Variables to keep track of the received characters and the current position
     char readChar = cb.buffer[cb.tail];
