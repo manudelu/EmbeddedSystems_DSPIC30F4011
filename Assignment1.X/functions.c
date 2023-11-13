@@ -130,10 +130,10 @@ void uart_setup() {
 
 // Function used for transmitting data over a UART
 // CHECK PERCHE NON VIENE MAI USATA
-/*void uart_write(char str[]) {
+void uart_write(char str[]) {
     for(int i = 0; str[i] != '\0'; i++)
         U2TXREG = str[i];
-}*/
+}
 
 // void vedi
 // Function to push data into the circular buffer

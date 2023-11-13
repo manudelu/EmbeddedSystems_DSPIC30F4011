@@ -45,8 +45,10 @@
 
 // Create the CircularBuffer object
 volatile CircularBuffer cb;
-volatile short S5onPressed = 0;
-volatile short S6onPressed = 0;
+//volatile short S5onPressed = 0;
+//volatile short S6onPressed = 0;
+
+volatile char charCount[4];
 
 // init buttons
 // interrupt S5 & S6
@@ -57,17 +59,39 @@ void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
     IFS1bits.U2RXIF = 0;
     char receivedChar = U2RXREG; // Copy char from received REG
     cb_push(&cb, receivedChar); // When a new char is received push it
-    U2TXREG = receivedChar; //vedi i char che arrivano
+    //U2TXREG = receivedChar; //vedi i char che arrivano
 }
 
-void __attribute__((__interrupt__, __auto_psv__)) _INT0Interrupt() {
+void __attribute__ ((__interrupt__ , __auto_psv__ ) ) _INT0Interrupt() {
+    IFS0bits.INT0IF = 0;
+    sprintf(charCount, "%d", cb.count);
+    uart_write(charCount);
+    IEC0bits.INT0IE = 0; // disable interrupt for INT0
+    tmr_setup_period(TIMER3, 20); // start timer 2
+}
+
+/*void __attribute__ ((__interrupt__ , __auto_psv__ ) ) _INT1Interrupt() {
+    IFS1bits.INT1IF = 0;
+    U2TXREG = cb.count; // Funge ma se passo il numero stampa '<3>' (quadratino)
+    IEC0bits.INT0IE = 0; // disable interrupt for INT0
+    tmr_setup_period(TIMER2, 20); // start timer 2
+}*/
+
+void __attribute__ (( __interrupt__ , __auto_psv__ ) ) _T3Interrupt() {
+    IFS0bits.T3IF = 0;
+    T3CONbits.TON = 0; // stop timer 3
+    IFS0bits.INT0IF = 0; // reset INT0 IF
+    IEC0bits.INT0IE = 1; // enable interrupt for INT0
+}
+
+/*void __attribute__((__interrupt__, __auto_psv__)) _INT0Interrupt() {
     IFS0bits.INT0IF = 0; // reset interrupt flag
     IEC0bits.INT0IE = 0; //disable INT0 interruptù
     
     //set the various timer to prevent button bouncing
 }
 
-/*void __attribute__((__interrupt__, __auto_psv__)) _INT1Interrupt() {
+void __attribute__((__interrupt__, __auto_psv__)) _INT1Interrupt() {
     IFS1bits.INT1IF = 0;
     //set the various timer to prevent button bouncing
 }*/
@@ -95,7 +119,7 @@ int main() {
     // Buffer to hold the "Char Recv: XXX" string
     char charCountStr[16];
     
-    IEC0bits.INT0IE = 1; // enable INT0 interrupt!
+    //IEC0bits.INT0IE = 1; // enable INT0 interrupt!
     //IEC1bits.INT1IE = 1; // enable INT1 interrupt!
     
     TRISBbits.TRISB0 = 0; // Set the LED D3 as OUT
@@ -113,6 +137,9 @@ int main() {
         }*/
         
         //if (U2STAbits.URXDA == 1) { //???
+        
+        IEC0bits.INT0IE = 1; // enable interrupt for INT0
+        IEC0bits.T3IE = 1; // enable interrupt for T3
         
         //non capisco perche ma a quanto pare serve, idk //TODO
         // BOH MAGARI è PER QUESTO CHE CI SERVE LA STRINGA AL POSTO DEL SINGOLO CHAR
@@ -143,15 +170,12 @@ int main() {
             lcd_write(16, charCountStr);
         }
         //}
+        
         /*else {
             LATBbits.LATB0 = 1;
         }*/   
         
         //TODO
-        if(IFS0bits.INT0IF == 1){
-            IFS0bits.INT0IF = 0;
-            U2TXREG = cb.count; // Funge ma se passo il numero stampa '<3>' (quadratino)          
-        }
         
         //TODO
         /*if(IFS1bits.INT1IF == 1){
