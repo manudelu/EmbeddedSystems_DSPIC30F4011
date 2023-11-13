@@ -56,6 +56,7 @@ void tmr_setup_period(int timer, int ms) {
         TMR3 = 0;                // Reset timer counter
         T3CONbits.TCKPS = t;     // Set the prescaler 
         PR3 = steps/presc;       // Set the number of clock step of the counter
+        IFS0bits.T3IF = 0;
         T3CONbits.TON = 1;       // Starts the timer
     }
 }
@@ -112,9 +113,11 @@ void lcd_write(short start, char str) {
     lcd_move_cursor(start);
     
     // Iterate through the string and write each character to the LCD
-    // Wait until the SPI Transmit Buffer is not full
-    while (SPI1STATbits.SPITBF == 1); 
-    SPI1BUF = str;
+    //for(int i = 0; str[i] != '\0'; i++) {
+        // Wait until the SPI Transmit Buffer is not full
+        while (SPI1STATbits.SPITBF == 1); 
+        SPI1BUF = str;
+    //}
 }
 
 // Function to clear a portion of the LCD by writing spaces
@@ -130,6 +133,7 @@ void lcd_clear(short start, short n){
 
 // Setup for the Universal Asynchronous Receiver-Transmitter (UART) peripheral
 void uart_setup() {
+    //U2STAbits.URXISEL = 3; // MAI USATA CON INTERRUPT //Set interrupt when buffer is 3/4 full
     U2BRG = 11;               // (7372800 / 4) / (16 * 9600)
     U2MODEbits.UARTEN = 1;    // Enable UART 
     U2STAbits.UTXEN = 1;      // Enable Transmission (must be after UARTEN)
@@ -138,6 +142,7 @@ void uart_setup() {
 }
 
 // Function used for transmitting data over a UART
+// CHECK PERCHE NON VIENE MAI USATA
 void uart_write(char str[]) {
     for (int i=0; str[i] != '\0'; i++) {
         U2TXREG = str[i];   
