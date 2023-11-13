@@ -66,7 +66,7 @@ void __attribute__ ((__interrupt__ , __auto_psv__ ) ) _INT0Interrupt() {
     IEC0bits.INT0IE = 0; // disable interrupt for INT0
     sprintf(charCount, "%d", cb.count);
     uart_write(charCount);
-    tmr_setup_period(TIMER3, 100); // start timer 3
+    tmr_setup_period(TIMER3, 100); // start timer 3 // avoid button bouncing
     IEC0bits.T3IE = 1; // enable interrupt for T3
 }
 

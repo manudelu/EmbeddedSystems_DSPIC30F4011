@@ -170,8 +170,8 @@ void cb_push(volatile CircularBuffer *cb, char data) { // WRITE
 // Function to pop data from the circular buffer
 int cb_pop(volatile CircularBuffer *cb, char *data) { // READ
     if (cb->to_read == 0)  // If the head and tail are at the same position, the circular buffer is empty.
-        return 0;  // Return -1 to indicate a failed pop (buffer is empty).
-    //cosa succede se ritorna -1??
+        return 0;  // Return 0 to indicate a failed pop (buffer is empty).
+    //cosa succede se ritorna 0??
     
     *data = cb->buffer[cb->tail];  // Read the data from the buffer at the current tail position.
     cb->tail++;              // Move the tail to the next data offset.

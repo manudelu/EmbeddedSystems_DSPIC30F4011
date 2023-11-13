@@ -604,7 +604,7 @@ __RESERVED2
 
 __FGS             0xf8000a          0x2
  *(__FGS.sec*)
- __FGS.sec        0xf8000a          0x2 /CW/_FGS
+ __FGS.sec        0xf8000a          0x2 /CW/_FGS€aý
                   0xf8000a                  __FGS.sec
 
 __FICD
@@ -1451,7 +1451,7 @@ LOAD c:/program files/microchip/xc16/v2.10/bin/bin/../../lib\libm-elf.a
 LOAD c:/program files/microchip/xc16/v2.10/bin/bin/../../lib\libc99-elf.a
 END GROUP
 OUTPUT(dist/default/production/Assignment1.X.production.elf elf32-pic30)
-LOAD /CW/_FGS
+LOAD /CW/_FGS€aý
 LOAD default_isr
 LOAD data_init
 
