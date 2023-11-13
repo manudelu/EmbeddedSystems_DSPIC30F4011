@@ -96,26 +96,27 @@ void lcd_move_cursor(short position)
 }
 
 // Function to write a string on the LCD starting at a specified position
-void lcd_write(short start, char str[]) {
+void lcd_write(short start, char str) {
     
     lcd_move_cursor(start);
     
     // Iterate through the string and write each character to the LCD
-    for(int i = 0; str[i] != '\0'; i++) {
+    //for(int i = 0; str[i] != '\0'; i++) {
         // Wait until the SPI Transmit Buffer is not full
         while (SPI1STATbits.SPITBF == 1); 
-        SPI1BUF = str[i];
-    }
+        SPI1BUF = str;
+    //}
 }
 
 // Function to clear a portion of the LCD by writing spaces
 void lcd_clear(short start, short n){
     // Create an array of spaces to clear the LCD
     char spaces[n];
-    for(int i=0; i<n; ++i)
+    for(int i=0; i<n; ++i) {
         spaces[i] = ' ';
-    // Write the spaces to the LCD starting at the specified position
-    lcd_write(start, spaces);
+        lcd_write(i, spaces[i]);
+    }
+    // Write the spaces to the LCD starting at the specified position  
 }
 
 // Setup for the Universal Asynchronous Receiver-Transmitter (UART) peripheral
@@ -131,8 +132,9 @@ void uart_setup() {
 // Function used for transmitting data over a UART
 // CHECK PERCHE NON VIENE MAI USATA
 void uart_write(char str[]) {
-    for(int i = 0; str[i] != '\0'; i++)
-        U2TXREG = str[i];
+    for (int i=0; str[i] != '\0'; i++) {
+        U2TXREG = str[i];   
+    }
 }
 
 // void vedi

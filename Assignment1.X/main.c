@@ -59,7 +59,6 @@ void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
     IFS1bits.U2RXIF = 0;
     char receivedChar = U2RXREG; // Copy char from received REG
     cb_push(&cb, receivedChar); // When a new char is received push it
-    //U2TXREG = receivedChar; //vedi i char che arrivano
 }
 
 void __attribute__ ((__interrupt__ , __auto_psv__ ) ) _INT0Interrupt() {
@@ -84,14 +83,7 @@ void __attribute__ (( __interrupt__ , __auto_psv__ ) ) _T3Interrupt() {
     IEC0bits.INT0IE = 1; // enable interrupt for INT0
 }
 
-/*void __attribute__((__interrupt__, __auto_psv__)) _INT0Interrupt() {
-    IFS0bits.INT0IF = 0; // reset interrupt flag
-    IEC0bits.INT0IE = 0; //disable INT0 interruptù
-    
-    //set the various timer to prevent button bouncing
-}
-
-void __attribute__((__interrupt__, __auto_psv__)) _INT1Interrupt() {
+/*void __attribute__((__interrupt__, __auto_psv__)) _INT1Interrupt() {
     IFS1bits.INT1IF = 0;
     //set the various timer to prevent button bouncing
 }*/
@@ -109,23 +101,22 @@ int main() {
     cb.count = 0;
     
     // Variables to keep track of the received characters and the current position
-    
-    //TODO
-    char readChar[cb.tail]; //USARE BUFFER DEL CB??? OPPURE UN CHAR SINGOLO QUANTOMENO
-    //int readIndex = 0;     // Points to the next character to read
+    char readChar = cb.buffer[cb.tail];
     int writeIndex = 0;    // Points to the next position to write
-    //int charCount = 0;  // Keeps track of the char passed via uart2
     
     // Buffer to hold the "Char Recv: XXX" string
-    char charCountStr[16];
+    char charCountStr[16]= "Char Recv:";
     
-    //IEC0bits.INT0IE = 1; // enable INT0 interrupt!
-    //IEC1bits.INT1IE = 1; // enable INT1 interrupt!
+    for (int i = 0; charCountStr[i] != '\0'; i++) {
+        lcd_write(i + 16, charCountStr[i]);
+    }
+    
+    lcd_move_cursor(0);
+    
+    IEC0bits.INT0IE = 1; // enable interrupt for INT0
     
     TRISBbits.TRISB0 = 0; // Set the LED D3 as OUT
     TRISBbits.TRISB1 = 0; // Set the LED D4 as OUT
-    
-    lcd_write(16, "Char Recv: ");
 
     while (1) {  
         // Delay for 7ms to simulate the algorithm execution time
@@ -138,7 +129,6 @@ int main() {
         
         //if (U2STAbits.URXDA == 1) { //???
         
-        IEC0bits.INT0IE = 1; // enable interrupt for INT0
         IEC0bits.T3IE = 1; // enable interrupt for T3
         
         //non capisco perche ma a quanto pare serve, idk //TODO
@@ -156,18 +146,16 @@ int main() {
             
             writeIndex = writeIndex % 16; // when it reaches the end go back to the start
             
-            // Clear the first row of the LCD
-            // VA BENE USARE QUESTO FOR???
-            for (int i = 0; readChar[i] != '\0'; i++) {
-                if (readChar[i] == '\r' || readChar[i] == '\n' || writeIndex == 0) {
-                    lcd_clear(0, 16);
-                    writeIndex = 0;
-                }
+            // Clear the first row of the LCD            
+            if (readChar == '\r' || readChar == '\n' || writeIndex == 0) {
+                lcd_clear(0, 16);
+                writeIndex = 0;
             }
             
             // Convert the charCount to a string and display it on the second row
-            sprintf(charCountStr, "Char Recv: %d", cb.count); //ERROR IN COUNT
-            lcd_write(16, charCountStr);
+            sprintf(charCountStr, "Char Recv: %d", cb.count);
+            for (int i=0; charCountStr[i] != '\0'; i++) 
+                lcd_write(i+16, charCountStr[i]);
         }
         //}
         
