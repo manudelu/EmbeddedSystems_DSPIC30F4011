@@ -51,6 +51,14 @@ void tmr_setup_period(int timer, int ms) {
         PR2 = steps/presc;       // Set the number of clock step of the counter
         T2CONbits.TON = 1;       // Starts the timer
     }
+    else if (timer == 3) {
+        T3CONbits.TON = 0;       // Stops the timer
+        TMR3 = 0;                // Reset timer counter
+        T3CONbits.TCKPS = t;     // Set the prescaler 
+        PR3 = steps/presc;       // Set the number of clock step of the counter
+        IFS0bits.T3IF = 0;
+        T3CONbits.TON = 1;       // Starts the timer
+    }
 }
 
 // Function that uses the timer flag to wait until it has expired
@@ -63,6 +71,10 @@ void tmr_wait_period(int timer) {
     else if (timer == 2) {
         while(IFS0bits.T2IF == 0){};
         IFS0bits.T2IF = 0; // Reset timer2 interrupt flag
+    }
+    else if (timer == 3) {
+        while(IFS0bits.T3IF == 0){};
+        IFS0bits.T3IF = 0; // Reset timer2 interrupt flag
     }
 }
 

@@ -63,10 +63,11 @@ void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
 
 void __attribute__ ((__interrupt__ , __auto_psv__ ) ) _INT0Interrupt() {
     IFS0bits.INT0IF = 0;
+    IEC0bits.INT0IE = 0; // disable interrupt for INT0
     sprintf(charCount, "%d", cb.count);
     uart_write(charCount);
-    IEC0bits.INT0IE = 0; // disable interrupt for INT0
-    tmr_setup_period(TIMER3, 20); // start timer 2
+    tmr_setup_period(TIMER3, 30); // start timer 3
+    IEC0bits.T3IE = 1; // enable interrupt for T3
 }
 
 /*void __attribute__ ((__interrupt__ , __auto_psv__ ) ) _INT1Interrupt() {
@@ -78,8 +79,10 @@ void __attribute__ ((__interrupt__ , __auto_psv__ ) ) _INT0Interrupt() {
 
 void __attribute__ (( __interrupt__ , __auto_psv__ ) ) _T3Interrupt() {
     IFS0bits.T3IF = 0;
-    T3CONbits.TON = 0; // stop timer 3
     IFS0bits.INT0IF = 0; // reset INT0 IF
+    T3CONbits.TON = 0; // stop timer 3
+    TMR3 = 0;
+    IEC0bits.T3IE = 0;
     IEC0bits.INT0IE = 1; // enable interrupt for INT0
 }
 
@@ -128,8 +131,6 @@ int main() {
         }*/
         
         //if (U2STAbits.URXDA == 1) { //???
-        
-        IEC0bits.T3IE = 1; // enable interrupt for T3
         
         //non capisco perche ma a quanto pare serve, idk //TODO
         // BOH MAGARI è PER QUESTO CHE CI SERVE LA STRINGA AL POSTO DEL SINGOLO CHAR
