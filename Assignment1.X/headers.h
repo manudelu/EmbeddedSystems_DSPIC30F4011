@@ -17,31 +17,19 @@
 #define BUFFER_SIZE 16 // Define the size of the circular buffer
 
 // CHECKS
-// test dei bottoni s5 s6
-// bouncing del bottone -> cambia T3 interrupt
-// test cb, 17 char alla prima, 15+2, 1000 char alla prima iterazione,
-// 34/51 alla prima, 18-60 alla prima, stessi dopo il clear da s6
-// 1+2+3+4+..., 17+s6+17, 16/32/48 alla prima
-// slide finali
-// prima riga piena fino a 16
+// prima riga piena fino a 16 16/32/48 alla prima
 
 //TODO
-// limite al cb.count (999)
-// bouncing s5
-// clear non usa posizione -> remove start
-// while(SPI1STATbits.SPIBUF == 1) in lcd_move_cursor, in caso metti solo una volta all'inizio
 // controlla cosa fa appena arriva alla fine della prima riga dell'lcd
-// ottimizzazione
-// char readChar, senza mettere = cb.buffer[cb.tail]
-// (writeIndex + 1) % 16 anziche writeIndex++ e writeIndex %= 16
-// change array del charCount da [4] a [3]
-// OVERFLOW
-// fix timer functions (vedi prescaler)
-// vedi se vedi enum per TIMERs
 // fai la roba che quando raggiunge la fine della prima cursor a 0xC0
+// ottimizzazione
+
+// fix timer functions (vedi prescaler)
+// vedi se fare enum per TIMERs e switch nelle funzioni
+
+// OVERFLOW, tecnicamente gia fatto, non ci va mai
 // chiama int0 interrupt, enable T3 interrupt -> dentro (set + disable INT0) if (PORTEbits.RE8) { uart_write(cb.counter); }
-// s6 pressed -> check clear (dovrebbe fare solo prima riga), vedi se c'è un modo per cambiare count in seconda riga
-// vedi se serve for in s6 pressed, direi che serve
+//non dovrebbe servire
 
 typedef struct {
     char buffer[BUFFER_SIZE];
@@ -61,11 +49,11 @@ void tmr_wait_ms(int timer, int ms);
 void spi_setup();
 void lcd_move_cursor(short position);
 void lcd_write(short start, char str);
-void lcd_clear(short start, short n);
+void lcd_clear(short start, short n); 
 
 // Definition of UARTS related functions
 void uart_setup();
-void uart_write(char str[]);
+void uart_write(int count);
 
 // Definition for Circular Buffer related functions
 void cb_push(volatile CircularBuffer *cb, char data);

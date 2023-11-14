@@ -110,28 +110,27 @@ void lcd_move_cursor(short position)
 
 // Function to write a string on the LCD starting at a specified position
 void lcd_write(short start, char str) {
-    
     lcd_move_cursor(start);
+    
+    // VEDI PER PUNTO 6 SLIDE SOTTO
+    //if (start == 16)
+    //    lcd_move_cursor(16);
     
     // Wait until the SPI Transmit Buffer is not full
     while (SPI1STATbits.SPITBF == 1); 
     SPI1BUF = str;
-    
-    // VEDI PER PUNTO 6 SLIDE SOTTO
-    //if (start == 16)
-    //  lcd_move_cursor(16)
 }
 
 // Function to clear a portion of the LCD by writing spaces
-void lcd_clear(short start, short n){
+void lcd_clear(short start, short n){ 
     // Create an array of spaces to clear the LCD
     char spaces[n];
-    for(int i=0; i<n; ++i) {
+    for(int i=0; i<n; i++) {
         spaces[i] = ' ';
-        lcd_write(i, spaces[i]);
+        lcd_write(start + i, spaces[i]);
     }
     // Write the spaces to the LCD starting at the specified position  
-    lcd_move_cursor(start);
+    //lcd_move_cursor(start);
 }
 
 // Setup for the Universal Asynchronous Receiver-Transmitter (UART) peripheral
@@ -144,10 +143,12 @@ void uart_setup() {
 }
 
 // Function used for transmitting data over a UART
-void uart_write(char str[]) { // si potrebbe mettere qui sprintf, con passaggio di int anziche stringa
-    for (int i=0; str[i] != '\0'; i++) {
-        //while (U2STAbits.UTXBF == 1); //vedi
-        U2TXREG = str[i];   
+void uart_write(int count) { // si potrebbe mettere qui sprintf, con passaggio di int anziche stringa
+    char charCount[4];
+    sprintf(charCount, "%d", count);    
+    for (int i=0; charCount[i] != '\0'; i++) {
+        while (U2STAbits.UTXBF == 1); //vedi
+        U2TXREG = charCount[i];   
     }
 }
 
@@ -165,6 +166,7 @@ void cb_push(volatile CircularBuffer *cb, char data) { // WRITE
 
 // Function to pop data from the circular buffer
 int cb_pop(volatile CircularBuffer *cb, char *data) { // READ
+    //if an overflow is occurred                
     if (cb->to_read == 0)           // If the head and tail are at the same position, the circular buffer is empty.
         return 0;                   // Return 0 to indicate a failed pop (buffer is empty). 
     

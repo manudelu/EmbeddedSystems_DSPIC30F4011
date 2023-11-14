@@ -42,22 +42,21 @@
 
 // Create the CircularBuffer object
 volatile CircularBuffer cb;
-volatile char charCount[4]; //metti 3 // VEDI // metti sprintf in fun uart_write
 
 // Interrupt handler for UART receive
 void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
     IFS1bits.U2RXIF = 0;
     char receivedChar = U2RXREG; // Copy char from received REG
     cb_push(&cb, receivedChar);  // When a new char is received, push it to the circular buffer
+    U2TXREG = receivedChar;
 }
 
 // Interrupt handler for external interrupt 0 (INT0)
 void __attribute__ ((__interrupt__ , __auto_psv__ ) ) _INT0Interrupt() {
     IFS0bits.INT0IF = 0;
     IEC0bits.INT0IE = 0;                 // Disable interrupt for INT0
-    sprintf(charCount, "%d", cb.count);  // Convert count to string
-    uart_write(charCount);               // Send count via UART
-    tmr_setup_period(TIMER3, 100);       // Start timer 3  //////////VEDI//////////
+    uart_write(cb.count);               // Send count via UART
+    tmr_setup_period(TIMER3, 20);       // Start timer 3  //////////VEDI//////////
     IEC0bits.T3IE = 1;                   // Enable interrupt for timer 3
 }
 
@@ -86,11 +85,11 @@ int main() {
     cb.to_read = 0;
     
     // Variables to keep track of the received characters and the current position
-    char readChar = cb.buffer[cb.tail];
+    char readChar;
     int writeIndex = 0;    // Points to the next position to write
     
     // Buffer to hold the "Char Recv: XXX" string
-    char charCountStr[16]= "Char Recv:";
+    char charCountStr[16]= "Char Recv: ";
     
     // Display the initial message on the LCD
     for (int i = 0; charCountStr[i] != '\0'; i++) {
@@ -101,7 +100,7 @@ int main() {
     
     IEC0bits.INT0IE = 1;    // Enable interrupt for INT0
 
-    while (1) {  
+    while (1) {
         // Delay for 7ms to simulate the algorithm execution time
         algorithm();
         
@@ -112,9 +111,13 @@ int main() {
         if (read == 1) {
             lcd_move_cursor(writeIndex);
             lcd_write(writeIndex, readChar); 
-            writeIndex++;
+            writeIndex = (writeIndex + 1) % 16; // When it reaches the end, go back to the start
             
-            writeIndex = writeIndex % 16; // When it reaches the end, go back to the start
+            // Maximum of cb.count not entirely precise
+            if (cb.count >= 1000) {
+                lcd_clear(16, 16);
+                cb.count = 0;
+            }
             
             // Clear the first row of the LCD            
             if (readChar == '\r' || readChar == '\n' || writeIndex == 0) {
@@ -135,7 +138,8 @@ int main() {
             writeIndex = 0;
             lcd_clear(0, 32);
             
-            // VEDI se serve
+            // si può togliere, toglie tutto ma appena vengono inseriti char riappare tutto
+            // preferirei lasciarlo tbh
             sprintf(charCountStr, "Char Recv: %d", cb.count);
             for (int i=0; charCountStr[i] != '\0'; i++) 
                 lcd_write(i+16, charCountStr[i]);
