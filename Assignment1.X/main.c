@@ -143,14 +143,14 @@ int main() {
         }
         
         if(IFS1bits.INT1IF == 1){
-                IFS1bits.INT1IF = 0;
-                cb.count = 0;
-                writeIndex = 0;
-                lcd_clear(0, 32);
-                sprintf(charCountStr, "Char Recv: %d", cb.count);
-                for (int i=0; charCountStr[i] != '\0'; i++) 
-                    lcd_write(i+16, charCountStr[i]);
-            }
+            IFS1bits.INT1IF = 0;
+            cb.count = 0;
+            writeIndex = 0;
+            lcd_clear(0, 32);
+            sprintf(charCountStr, "Char Recv: %d", cb.count);
+            for (int i=0; charCountStr[i] != '\0'; i++) 
+                lcd_write(i+16, charCountStr[i]);
+        }
         
         lcd_move_cursor(writeIndex); // Set cursor at the desired position
         tmr_wait_period(2); // Wait before next loop
