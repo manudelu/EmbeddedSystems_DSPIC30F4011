@@ -17,15 +17,16 @@
 #define BUFFER_SIZE 16 // Define the size of the circular buffer
 
 // CHECKS
-// bouncing del bottone
+// test dei bottoni s5 s6
+// bouncing del bottone -> cambia T3 interrupt
 // test cb, 17 char alla prima, 15+2, 1000 char alla prima iterazione,
 // 34/51 alla prima, 18-60 alla prima, stessi dopo il clear da s6
 // 1+2+3+4+..., 17+s6+17, 16/32/48 alla prima
 // slide finali
+// prima riga piena fino a 16
 
 //TODO
 // limite al cb.count (999)
-// test dei bottoni s5 s6
 // bouncing s5
 // clear non usa posizione -> remove start
 // while(SPI1STATbits.SPIBUF == 1) in lcd_move_cursor, in caso metti solo una volta all'inizio
@@ -37,6 +38,10 @@
 // OVERFLOW
 // fix timer functions (vedi prescaler)
 // vedi se vedi enum per TIMERs
+// fai la roba che quando raggiunge la fine della prima cursor a 0xC0
+// chiama int0 interrupt, enable T3 interrupt -> dentro (set + disable INT0) if (PORTEbits.RE8) { uart_write(cb.counter); }
+// s6 pressed -> check clear (dovrebbe fare solo prima riga), vedi se c'è un modo per cambiare count in seconda riga
+// vedi se serve for in s6 pressed, direi che serve
 
 typedef struct {
     char buffer[BUFFER_SIZE];

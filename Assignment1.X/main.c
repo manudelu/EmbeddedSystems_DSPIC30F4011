@@ -42,7 +42,7 @@
 
 // Create the CircularBuffer object
 volatile CircularBuffer cb;
-volatile char charCount[4]; //metti 3
+volatile char charCount[4]; //metti 3 // VEDI // metti sprintf in fun uart_write
 
 // Interrupt handler for UART receive
 void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
@@ -77,7 +77,7 @@ int main() {
     spi_setup();
     uart_setup();
     tmr_wait_ms(TIMER1, 1000);    // Wait 1s to start the SPI correctly
-    tmr_setup_period(TIMER2, 10); // Period definition
+    tmr_setup_period(TIMER1, 10); // Period definition
     
     // Initialize Circular Buffer Variables
     cb.head = 0;
@@ -134,13 +134,15 @@ int main() {
             cb.count = 0;
             writeIndex = 0;
             lcd_clear(0, 32);
+            
+            // VEDI se serve
             sprintf(charCountStr, "Char Recv: %d", cb.count);
             for (int i=0; charCountStr[i] != '\0'; i++) 
                 lcd_write(i+16, charCountStr[i]);
         }
         
         lcd_move_cursor(writeIndex); // Set cursor at the desired position
-        tmr_wait_period(2); // Wait before next loop
+        tmr_wait_period(1); // Wait before next loop
     }
     
     return 0;

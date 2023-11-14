@@ -9,6 +9,7 @@
 #include "xc.h"
 #include "headers.h"
 
+// Function to simulate algorithm execution time
 void algorithm() {
     tmr_wait_ms(TIMER2, 7);  
 }
@@ -115,6 +116,10 @@ void lcd_write(short start, char str) {
     // Wait until the SPI Transmit Buffer is not full
     while (SPI1STATbits.SPITBF == 1); 
     SPI1BUF = str;
+    
+    // VEDI PER PUNTO 6 SLIDE SOTTO
+    //if (start == 16)
+    //  lcd_move_cursor(16)
 }
 
 // Function to clear a portion of the LCD by writing spaces
@@ -130,7 +135,7 @@ void lcd_clear(short start, short n){
 }
 
 // Setup for the Universal Asynchronous Receiver-Transmitter (UART) peripheral
-void uart_setup() {
+void uart_setup() { 
     //U2STAbits.URXISEL = 3; // MAI USATA CON INTERRUPT //Set interrupt when buffer is 3/4 full
     U2BRG = 11;               // (7372800 / 4) / (16 * 9600)
     U2MODEbits.UARTEN = 1;    // Enable UART 
@@ -139,9 +144,9 @@ void uart_setup() {
 }
 
 // Function used for transmitting data over a UART
-void uart_write(char str[]) {
-    //while (U2STAbits.UTXBF == 1); //vedi
+void uart_write(char str[]) { // si potrebbe mettere qui sprintf, con passaggio di int anziche stringa
     for (int i=0; str[i] != '\0'; i++) {
+        //while (U2STAbits.UTXBF == 1); //vedi
         U2TXREG = str[i];   
     }
 }
