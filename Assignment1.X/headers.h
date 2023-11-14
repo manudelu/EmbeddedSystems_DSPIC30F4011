@@ -28,11 +28,15 @@
 // test dei bottoni s5 s6
 // bouncing s5
 // clear non usa posizione -> remove start
-// SPI1STATbits.SPIBUF == 1 in lcd_move_cursor
+// while(SPI1STATbits.SPIBUF == 1) in lcd_move_cursor, in caso metti solo una volta all'inizio
 // controlla cosa fa appena arriva alla fine della prima riga dell'lcd
 // ottimizzazione
 // char readChar, senza mettere = cb.buffer[cb.tail]
 // (writeIndex + 1) % 16 anziche writeIndex++ e writeIndex %= 16
+// change array del charCount da [4] a [3]
+// OVERFLOW
+// fix timer functions (vedi prescaler)
+// vedi se vedi enum per TIMERs
 
 typedef struct {
     char buffer[BUFFER_SIZE];

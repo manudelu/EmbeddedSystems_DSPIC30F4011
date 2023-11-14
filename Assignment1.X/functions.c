@@ -100,7 +100,7 @@ void lcd_move_cursor(short position)
     // 0xC0 = start of second line
     
     // Wait until the SPI Transmit Buffer is not full 
-    // while (SPI1STATbits.SPITBF == 1); //boh vedi
+    while (SPI1STATbits.SPITBF == 1); //VEDI
     if (position < 16)
         SPI1BUF = 0x80 + position;
     else 
@@ -140,6 +140,7 @@ void uart_setup() {
 
 // Function used for transmitting data over a UART
 void uart_write(char str[]) {
+    //while (U2STAbits.UTXBF == 1); //vedi
     for (int i=0; str[i] != '\0'; i++) {
         U2TXREG = str[i];   
     }

@@ -42,7 +42,7 @@
 
 // Create the CircularBuffer object
 volatile CircularBuffer cb;
-volatile char charCount[4];
+volatile char charCount[4]; //metti 3
 
 // Interrupt handler for UART receive
 void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
@@ -50,7 +50,6 @@ void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
     char receivedChar = U2RXREG; // Copy char from received REG
     cb_push(&cb, receivedChar);  // When a new char is received, push it to the circular buffer
 }
-
 
 // Interrupt handler for external interrupt 0 (INT0)
 void __attribute__ ((__interrupt__ , __auto_psv__ ) ) _INT0Interrupt() {
