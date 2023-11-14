@@ -14,7 +14,7 @@
 #define TIMER1 1 
 #define TIMER2 2
 #define TIMER3 3
-#define BUFFER_SIZE 16 // Define the size of the circular buffer, ERROR IN COUNT
+#define BUFFER_SIZE 16 // Define the size of the circular buffer
 
 // CHECKS
 // bouncing del bottone

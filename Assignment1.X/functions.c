@@ -10,7 +10,7 @@
 #include "headers.h"
 
 void algorithm() {
-    tmr_wait_ms(TIMER2, 7);
+    tmr_wait_ms(TIMER2, 7);  
 }
 
 // Function that setups the timer to count for the specified amount of ms
@@ -112,12 +112,9 @@ void lcd_write(short start, char str) {
     
     lcd_move_cursor(start);
     
-    // Iterate through the string and write each character to the LCD
-    //for(int i = 0; str[i] != '\0'; i++) {
-        // Wait until the SPI Transmit Buffer is not full
-        while (SPI1STATbits.SPITBF == 1); 
-        SPI1BUF = str;
-    //}
+    // Wait until the SPI Transmit Buffer is not full
+    while (SPI1STATbits.SPITBF == 1); 
+    SPI1BUF = str;
 }
 
 // Function to clear a portion of the LCD by writing spaces
@@ -129,6 +126,7 @@ void lcd_clear(short start, short n){
         lcd_write(i, spaces[i]);
     }
     // Write the spaces to the LCD starting at the specified position  
+    lcd_move_cursor(start);
 }
 
 // Setup for the Universal Asynchronous Receiver-Transmitter (UART) peripheral
@@ -137,48 +135,39 @@ void uart_setup() {
     U2BRG = 11;               // (7372800 / 4) / (16 * 9600)
     U2MODEbits.UARTEN = 1;    // Enable UART 
     U2STAbits.UTXEN = 1;      // Enable Transmission (must be after UARTEN)
-    // It will trigger the interrupt when 3/4 of the UART buffer is full
     IEC1bits.U2RXIE = 1;      // Enable UART receiver interrupt
 }
 
 // Function used for transmitting data over a UART
-// CHECK PERCHE NON VIENE MAI USATA
 void uart_write(char str[]) {
     for (int i=0; str[i] != '\0'; i++) {
         U2TXREG = str[i];   
     }
 }
 
-// void vedi
 // Function to push data into the circular buffer
 void cb_push(volatile CircularBuffer *cb, char data) { // WRITE
-    /*if (cb->head == cb->tail)  // If the next position of the head is the same as the tail, the circular buffer is full.
-        return -1;  // Return -1 to indicate a failed push (buffer is full).
-    //CON -1 SI HA UN OVERFLOW ???*/
     
     cb->buffer[cb->head] = data;  // Load the data into the buffer at the current head position.
-    cb->head++;             // Move the head to the next data offset.
+    cb->head++;                   // Move the head to the next data offset.
     cb->count++;
     cb->to_read++;
     
     if (cb->head == BUFFER_SIZE)
-        cb->head = 0;  // Wrap around to the beginning if we've reached the end of the buffer.
-
-    //return 1;  // Return 1 to indicate a successful push.
+        cb->head = 0;             // Wrap around to the beginning if we've reached the end of the buffer.
 }
 
 // Function to pop data from the circular buffer
 int cb_pop(volatile CircularBuffer *cb, char *data) { // READ
-    if (cb->to_read == 0)  // If the head and tail are at the same position, the circular buffer is empty.
-        return 0;  // Return 0 to indicate a failed pop (buffer is empty).
-    //cosa succede se ritorna 0??
+    if (cb->to_read == 0)           // If the head and tail are at the same position, the circular buffer is empty.
+        return 0;                   // Return 0 to indicate a failed pop (buffer is empty). 
     
-    *data = cb->buffer[cb->tail];  // Read the data from the buffer at the current tail position.
-    cb->tail++;              // Move the tail to the next data offset.
+    *data = cb->buffer[cb->tail];   // Read the data from the buffer at the current tail position.
+    cb->tail++;                     // Move the tail to the next data offset.
     cb->to_read--;
 
     if (cb->tail == BUFFER_SIZE)
-        cb->tail = 0;  // Wrap around to the beginning if we've reached the end of the buffer.
+        cb->tail = 0;               // Wrap around to the beginning if we've reached the end of the buffer.
     
-    return 1;  // Return 1 to indicate a successful pop.
+    return 1;                       // Return 1 to indicate a successful pop.
 }
