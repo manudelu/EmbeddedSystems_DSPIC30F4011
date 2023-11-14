@@ -16,6 +16,24 @@
 #define TIMER3 3
 #define BUFFER_SIZE 16 // Define the size of the circular buffer, ERROR IN COUNT
 
+// CHECKS
+// bouncing del bottone
+// test cb, 17 char alla prima, 15+2, 1000 char alla prima iterazione,
+// 34/51 alla prima, 18-60 alla prima, stessi dopo il clear da s6
+// 1+2+3+4+..., 17+s6+17, 16/32/48 alla prima
+// slide finali
+
+//TODO
+// limite al cb.count (999)
+// test dei bottoni s5 s6
+// bouncing s5
+// clear non usa posizione -> remove start
+// SPI1STATbits.SPIBUF == 1 in lcd_move_cursor
+// controlla cosa fa appena arriva alla fine della prima riga dell'lcd
+// ottimizzazione
+// char readChar, senza mettere = cb.buffer[cb.tail]
+// (writeIndex + 1) % 16 anziche writeIndex++ e writeIndex %= 16
+
 typedef struct {
     char buffer[BUFFER_SIZE];
     int head;
