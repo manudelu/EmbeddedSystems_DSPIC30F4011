@@ -6,7 +6,6 @@
  */
 
 // DSPIC30F4011 Configuration Bit Settings
-
 // 'C' source line config statements
 
 // FOSC
@@ -45,15 +44,7 @@
 
 // Create the CircularBuffer object
 volatile CircularBuffer cb;
-//volatile short S5onPressed = 0;
-//volatile short S6onPressed = 0;
-
 volatile char charCount[4];
-
-// init buttons
-// interrupt S5 & S6
-// S5.onPressed -> send the number of charachters to the uart2 //U2TXREG = CharNumber
-// S6.onPressed -> clear the first row and reset the characters received counter
 
 void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
     IFS1bits.U2RXIF = 0;
@@ -66,7 +57,7 @@ void __attribute__ ((__interrupt__ , __auto_psv__ ) ) _INT0Interrupt() {
     IEC0bits.INT0IE = 0; // disable interrupt for INT0
     sprintf(charCount, "%d", cb.count);
     uart_write(charCount);
-    tmr_setup_period(TIMER3, 100); // start timer 3 // avoid button bouncing
+    tmr_setup_period(TIMER3, 100); // start timer 3  //////////VEDI//////////
     IEC0bits.T3IE = 1; // enable interrupt for T3
 }
 
@@ -107,8 +98,8 @@ int main() {
     
     IEC0bits.INT0IE = 1; // enable interrupt for INT0
     
-    TRISBbits.TRISB0 = 0; // Set the LED D3 as OUT
-    TRISBbits.TRISB1 = 0; // Set the LED D4 as OUT
+//    TRISBbits.TRISB0 = 0; // Set the LED D3 as OUT
+//    TRISBbits.TRISB1 = 0; // Set the LED D4 as OUT
 
     while (1) {  
         // Delay for 7ms to simulate the algorithm execution time
@@ -125,7 +116,7 @@ int main() {
                 
         if (read == 1) {
             lcd_move_cursor(writeIndex);
-            lcd_write(writeIndex, readChar); //FORSE QUI MEGLIO USARE IL BUFFER STESSO NELLA POSE TAIL ANZICHE LA STRINGA
+            lcd_write(writeIndex, readChar); 
             writeIndex++;
             
             writeIndex = writeIndex % 16; // when it reaches the end go back to the start
