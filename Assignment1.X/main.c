@@ -1,8 +1,6 @@
 /*
  * File:   main.c
  * Author: Delucchi Manuel, Matteo Cappellini
- *
- * Created on 4 novembre 2023, 16.28
  */
 
 // DSPIC30F4011 Configuration Bit Settings
@@ -34,42 +32,40 @@
 // FICD Configuration
 #pragma config ICS = ICS_PGD            // Comm Channel Select (Use PGC/EMUC and PGD/EMUD)
 
-// Include necessary libraries and headers
+// Include necessary libraries and header
 #include <xc.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "headers.h"
+#include "header.h"
 
 // Create the CircularBuffer object
 volatile CircularBuffer cb;
-short int s5onPressed = 0;
 
-// Interrupt handler for UART receive
+// Interrupt handler for the char recevied on UART2
 void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
-    IFS1bits.U2RXIF = 0;
-    char receivedChar = U2RXREG; // Copy char from received REG
+    IFS1bits.U2RXIF = 0;         // Reset UART2 Receiver Interrupt Flag Status bit
+    char receivedChar = U2RXREG; // Get char from UART2 received REG
     cb_push(&cb, receivedChar);  // When a new char is received, push it to the circular buffer
-    U2TXREG = receivedChar;
 }
 
 // Interrupt handler for external interrupt 0 (INT0)
-void __attribute__ ((__interrupt__ , __auto_psv__ ) ) _INT0Interrupt() {
-    IFS0bits.INT0IF = 0;
-    IEC0bits.INT0IE = 0;              // Send count via UART
-    tmr_setup_period(TIMER3, 20);       // Start timer 3  //////////VEDI//////////
-    IEC0bits.T3IE = 1;                   // Enable interrupt for timer 3
+void __attribute__ ((__interrupt__ , __auto_psv__ )) _INT0Interrupt() {
+    IFS0bits.INT0IF = 0;            // Reset External Interrupt 0 Flag Status bit
+    IEC0bits.INT0IE = 0;            // Disable Interrupt for INT0
+    tmr_setup_period(TIMER3, 20);   // Setup timer 3
+    IEC0bits.T3IE = 1;              // Enable interrupt for TIMER3
 }
 
-// Interrupt handler for Timer 3
-void __attribute__ (( __interrupt__ , __auto_psv__ ) ) _T3Interrupt() {
-    IFS0bits.T3IF = 0;
-    IFS0bits.INT0IF = 0;    // Reset INT0 IF
-    T3CONbits.TON = 0;      // Stop timer 3
-    TMR3 = 0;
-    IEC0bits.T3IE = 0;
-    IEC0bits.INT0IE = 1;    // Enable interrupt for INT0
-    if (PORTEbits.RE8) {
-        uart_write(cb.count);
+// Interrupt handler for Timer 3 used to avoid the bouncing of S5
+void __attribute__ (( __interrupt__ , __auto_psv__ )) _T3Interrupt() {
+    IFS0bits.T3IF = 0;          // Reset External Interrupt 3 Flag Status bit
+    IFS0bits.INT0IF = 0;        // Reset INT0 Interrupt Flag
+    T3CONbits.TON = 0;          // Stop timer 3
+    TMR3 = 0;                   // Reset timer counter
+    IEC0bits.T3IE = 0;          // Disable interrupt Timer 3
+    IEC0bits.INT0IE = 1;        // Enable interrupt for INT0
+    if (PORTEbits.RE8) {        
+        uart_write(cb.count);   // Send the count via UART2 if RE8 is set
     }
 }
 
@@ -87,9 +83,11 @@ int main() {
     cb.count = 0;
     cb.to_read = 0;
     
-    // Variables to keep track of the received characters and the current position
-    char readChar;
-    int writeIndex = 0;    // Points to the next position to write
+    IEC0bits.INT0IE = 1;    // Enable interrupt for INT0
+    
+    // Initializze Variables
+    char readChar;          // Keep track of the received characters
+    int writeIndex = 0;     // Keep track of the position on the LCD
     
     // Buffer to hold the "Char Recv: XXX" string
     char charCountStr[16]= "Char Recv: ";
@@ -98,30 +96,27 @@ int main() {
     for (int i = 0; charCountStr[i] != '\0'; i++) {
         lcd_write(i + 16, charCountStr[i]);
     }
-    
-    lcd_move_cursor(0);
-    
-    IEC0bits.INT0IE = 1;    // Enable interrupt for INT0
 
     while (1) {
         // Delay for 7ms to simulate the algorithm execution time
         algorithm();
         
-        IEC1bits.U2RXIE = 0;
-        int read = cb_pop(&cb, &readChar); // Read data from buffer
-        IEC1bits.U2RXIE = 1;
+        IEC1bits.U2RXIE = 0;                // Disable UART2 Receiver Interrupt
+        int read = cb_pop(&cb, &readChar);  // Pop data from buffer
+        IEC1bits.U2RXIE = 1;                // Enable UART2 Receiver Interrupt
                 
-        if (read == 1) {          
+        if (read == 1) {       
+            // Write up to 16 char on the first row of the LCD before clearing it
             if (writeIndex == 16) {
                 writeIndex = 0;
                 lcd_clear(0, 16);
             }
             
-            lcd_move_cursor(writeIndex);
-            lcd_write(writeIndex, readChar); 
-            writeIndex++;
+            lcd_move_cursor(writeIndex);        // Move to the desired position on the LCD
+            lcd_write(writeIndex, readChar);    // Write on the LCD screen
+            writeIndex++;                       // Go to the next position
             
-            // Clear the first row of the LCD            
+            // Clear the first row of the LCD when CR and LF char are received           
             if (readChar == '\r' || readChar == '\n') { 
                 lcd_clear(0, 16);
                 writeIndex = 0;
@@ -130,7 +125,7 @@ int main() {
             // Convert the charCount to a string and display it on the second row
             sprintf(charCountStr, "Char Recv: %d", cb.count);
             for (int i=0; charCountStr[i] != '\0'; i++) 
-                lcd_write(i+16, charCountStr[i]);
+                lcd_write(i + 16, charCountStr[i]);
         }
         
         // Reset count and clear LCD on external interrupt 1 (INT1) trigger
@@ -140,15 +135,13 @@ int main() {
             writeIndex = 0;
             lcd_clear(0, 32);
             
-            // si può togliere, toglie tutto ma appena vengono inseriti char riappare tutto
-            // preferirei lasciarlo tbh
             sprintf(charCountStr, "Char Recv: %d", cb.count);
             for (int i=0; charCountStr[i] != '\0'; i++) 
-                lcd_write(i+16, charCountStr[i]);
+                lcd_write(i + 16, charCountStr[i]);
         }
         
         lcd_move_cursor(writeIndex); // Set cursor at the desired position
-        tmr_wait_period(1); // Wait before next loop
+        tmr_wait_period(TIMER1); // Wait before next loop
     }
     
     return 0;

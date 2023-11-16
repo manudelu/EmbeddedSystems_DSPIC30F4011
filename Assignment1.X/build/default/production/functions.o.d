@@ -1,3 +1,3 @@
-build/default/production/functions.o: functions.c headers.h
+build/default/production/functions.o: functions.c header.h
 
-headers.h:
+header.h:

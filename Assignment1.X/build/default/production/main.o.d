@@ -1,3 +1,3 @@
-build/default/production/main.o: main.c headers.h
+build/default/production/main.o: main.c header.h
 
-headers.h:
+header.h:
