@@ -42,6 +42,7 @@
 
 // Create the CircularBuffer object
 volatile CircularBuffer cb;
+short int s5onPressed = 0;
 
 // Interrupt handler for UART receive
 void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
@@ -54,8 +55,7 @@ void __attribute__((__interrupt__, __auto_psv__)) _U2RXInterrupt() {
 // Interrupt handler for external interrupt 0 (INT0)
 void __attribute__ ((__interrupt__ , __auto_psv__ ) ) _INT0Interrupt() {
     IFS0bits.INT0IF = 0;
-    IEC0bits.INT0IE = 0;                 // Disable interrupt for INT0
-    uart_write(cb.count);               // Send count via UART
+    IEC0bits.INT0IE = 0;              // Send count via UART
     tmr_setup_period(TIMER3, 20);       // Start timer 3  //////////VEDI//////////
     IEC0bits.T3IE = 1;                   // Enable interrupt for timer 3
 }
@@ -68,6 +68,9 @@ void __attribute__ (( __interrupt__ , __auto_psv__ ) ) _T3Interrupt() {
     TMR3 = 0;
     IEC0bits.T3IE = 0;
     IEC0bits.INT0IE = 1;    // Enable interrupt for INT0
+    if (PORTEbits.RE8) {
+        uart_write(cb.count);
+    }
 }
 
 // Main function
@@ -116,7 +119,7 @@ int main() {
             
             lcd_move_cursor(writeIndex);
             lcd_write(writeIndex, readChar); 
-            writeIndex++; // When it reaches the end, go back to the start
+            writeIndex++;
             
             // Clear the first row of the LCD            
             if (readChar == '\r' || readChar == '\n') { 

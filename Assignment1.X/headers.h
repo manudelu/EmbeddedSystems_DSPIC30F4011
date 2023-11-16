@@ -22,8 +22,6 @@
 // fix timer functions (vedi prescaler)
 // vedi se fare enum per TIMERs e switch nelle funzioni
 
-// chiama int0 interrupt, enable T3 interrupt -> dentro (set + disable INT0) if (PORTEbits.RE8) { uart_write(cb.counter); }
-
 typedef struct {
     char buffer[BUFFER_SIZE];
     int head;
