@@ -1,6 +1,6 @@
 /*
  * File:   headers.h
- * Author: Delucchi Manuel, Matteo Cappellini
+ * Authors: Delucchi Manuel S4803977, Matteo Cappellini S4822622
  */
 
 #ifndef HEADERS_H
