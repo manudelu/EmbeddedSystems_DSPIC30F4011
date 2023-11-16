@@ -160,11 +160,11 @@ void cb_push(volatile CircularBuffer *cb, char data) { // WRITE
     cb->count++;
     cb->to_read++;
     
-    // Maximum of cb.count not entirely precise
-            if (cb->count == 1000) {
-                lcd_clear(16, 16);
-                cb->count = 0;
-            }
+    // Maximum of cb.count
+    if (cb->count == 1000) {
+        lcd_clear(16, 16);
+        cb->count = 0;
+    }
     
     if (cb->head == BUFFER_SIZE)
         cb->head = 0;             // Wrap around to the beginning if we've reached the end of the buffer.

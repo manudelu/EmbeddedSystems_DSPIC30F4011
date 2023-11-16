@@ -14,22 +14,15 @@
 #define TIMER1 1 
 #define TIMER2 2
 #define TIMER3 3
-#define BUFFER_SIZE 16 // Define the size of the circular buffer
-
-// CHECKS
-// prima riga piena fino a 16 16/32/48 alla prima
+#define BUFFER_SIZE 16
 
 //TODO
-// controlla cosa fa appena arriva alla fine della prima riga dell'lcd
-// fai la roba che quando raggiunge la fine della prima cursor a 0xC0
-// ottimizzazione
+// bouncing
 
 // fix timer functions (vedi prescaler)
 // vedi se fare enum per TIMERs e switch nelle funzioni
 
-// OVERFLOW, tecnicamente gia fatto, non ci va mai
 // chiama int0 interrupt, enable T3 interrupt -> dentro (set + disable INT0) if (PORTEbits.RE8) { uart_write(cb.counter); }
-//non dovrebbe servire
 
 typedef struct {
     char buffer[BUFFER_SIZE];

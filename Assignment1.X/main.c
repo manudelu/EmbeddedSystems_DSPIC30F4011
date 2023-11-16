@@ -108,13 +108,18 @@ int main() {
         int read = cb_pop(&cb, &readChar); // Read data from buffer
         IEC1bits.U2RXIE = 1;
                 
-        if (read == 1) {
+        if (read == 1) {          
+            if (writeIndex == 16) {
+                writeIndex = 0;
+                lcd_clear(0, 16);
+            }
+            
             lcd_move_cursor(writeIndex);
             lcd_write(writeIndex, readChar); 
-            writeIndex = (writeIndex + 1) % 16; // When it reaches the end, go back to the start
+            writeIndex++; // When it reaches the end, go back to the start
             
             // Clear the first row of the LCD            
-            if (readChar == '\r' || readChar == '\n' || writeIndex == 0) {
+            if (readChar == '\r' || readChar == '\n') { 
                 lcd_clear(0, 16);
                 writeIndex = 0;
             }
