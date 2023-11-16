@@ -159,10 +159,10 @@ section                    address   length (PC units)   length (bytes) (dec)
 -------                    -------   -----------------   --------------------
 .text                        0x100              0x1212          0x1b1b  (6939)
 .const                      0x1312                0x22            0x33  (51)
-.text                       0x1334               0x45c           0x68a  (1674)
-.dinit                      0x1790                0x28            0x3c  (60)
+.text                       0x1334               0x462           0x693  (1683)
+.dinit                      0x1796                0x28            0x3c  (60)
 
-                 Total "program" memory used (bytes):         0x2214  (8724) 17%
+                 Total "program" memory used (bytes):         0x221d  (8733) 17%
 
 
 "data" Memory  [Origin = 0x800, Length = 0x800]
@@ -266,8 +266,8 @@ External Symbols in Program Memory (by address):
                   0x00157a                  _uart_setup
                   0x00158a                  _uart_write
                   0x0015c8                  _cb_push
-                  0x001608                  _cb_pop
-                  0x00164e                  _main
+                  0x00161e                  _cb_pop
+                  0x001664                  _main
                   0xf8000a                  __FGS.sec
 
 External Symbols in Program Memory (by name):
@@ -324,12 +324,12 @@ External Symbols in Program Memory (by name):
                   0x000460                  __unpackdnrmf
                   0x001334                  _algorithm
                   0x000eb2                  _atoi
-                  0x001608                  _cb_pop
+                  0x00161e                  _cb_pop
                   0x0015c8                  _cb_push
                   0x001524                  _lcd_clear
                   0x0014d0                  _lcd_move_cursor
                   0x001506                  _lcd_write
-                  0x00164e                  _main
+                  0x001664                  _main
                   0x000efe                  _memcpy
                   0x000f0c                  _memset
                   0x0014b4                  _spi_setup
@@ -602,7 +602,7 @@ __RESERVED2
 
 __FGS             0xf8000a          0x2
  *(__FGS.sec*)
- __FGS.sec        0xf8000a          0x2 /CW/_FGSpäz
+ __FGS.sec        0xf8000a          0x2 /CW/_FGS°ˆ
                   0xf8000a                  __FGS.sec
 
 __FICD
@@ -660,8 +660,8 @@ userdata
 
 .debug_line       0x000000        0x85e
  *(.debug_line)
- .debug_line      0x000000        0x161 build/default/production/main.o
- .debug_line      0x000161        0x194 build/default/production/functions.o
+ .debug_line      0x000000        0x15e build/default/production/main.o
+ .debug_line      0x00015e        0x197 build/default/production/functions.o
  .debug_line      0x0002f5         0x43 c:/program files/microchip/xc16/v2.10/bin/bin/../../lib\libc99-pic30-elf.a(divsi3.XX_o)
  .debug_line      0x000338         0x56 c:/program files/microchip/xc16/v2.10/bin/bin/../../lib\libc99-pic30-elf.a(fixsfsi.XX_o)
  .debug_line      0x00038e         0x3a c:/program files/microchip/xc16/v2.10/bin/bin/../../lib\libc99-pic30-elf.a(floatsisf.XX_o)
@@ -1449,7 +1449,7 @@ LOAD c:/program files/microchip/xc16/v2.10/bin/bin/../../lib\libm-elf.a
 LOAD c:/program files/microchip/xc16/v2.10/bin/bin/../../lib\libc99-elf.a
 END GROUP
 OUTPUT(dist/default/production/Assignment1.X.production.elf elf32-pic30)
-LOAD /CW/_FGSpäz
+LOAD /CW/_FGS°ˆ
 LOAD default_isr
 LOAD data_init
 
@@ -1577,8 +1577,8 @@ __c30_signature
  .const             0x9312         0x1e build/default/production/main.o
  .const             0x9330          0x4 build/default/production/functions.o
 
-.text             0x001334        0x45c
- .text            0x001334        0x31a build/default/production/functions.o
+.text             0x001334        0x462
+ .text            0x001334        0x330 build/default/production/functions.o
                   0x001334                  _algorithm
                   0x001340                  _tmr_setup_period
                   0x00145a                  _tmr_wait_period
@@ -1590,9 +1590,9 @@ __c30_signature
                   0x00157a                  _uart_setup
                   0x00158a                  _uart_write
                   0x0015c8                  _cb_push
-                  0x001608                  _cb_pop
- .text            0x00164e        0x142 build/default/production/main.o
-                  0x00164e                  _main
+                  0x00161e                  _cb_pop
+ .text            0x001664        0x132 build/default/production/main.o
+                  0x001664                  _main
 
-.dinit            0x001790         0x28
- .dinit           0x001790         0x28 data_init
+.dinit            0x001796         0x28
+ .dinit           0x001796         0x28 data_init

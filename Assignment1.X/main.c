@@ -113,12 +113,6 @@ int main() {
             lcd_write(writeIndex, readChar); 
             writeIndex = (writeIndex + 1) % 16; // When it reaches the end, go back to the start
             
-            // Maximum of cb.count not entirely precise
-            if (cb.count >= 1000) {
-                lcd_clear(16, 16);
-                cb.count = 0;
-            }
-            
             // Clear the first row of the LCD            
             if (readChar == '\r' || readChar == '\n' || writeIndex == 0) {
                 lcd_clear(0, 16);
