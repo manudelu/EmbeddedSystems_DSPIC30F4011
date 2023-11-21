@@ -19,3 +19,11 @@ http://www.microchip.com/mplab/mplab-x-ide
 
 ▶ XC16 Compiler:
 http://www.microchip.com/mplab/compilers
+
+Team Members
+-------------
+
+|    |Name |Surname |
+|----|---|---|
+| 1 | Manuel | Delucchi |
+| 2 | Matteo | Cappellini |
