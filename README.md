@@ -1,7 +1,7 @@
-Embedded Systems
+Embedded Systems 💻
 ======================================
 
-Project Description
+Project Description 📎
 ------------------
 1. Simulate an algorithm that needs 7 ms for its execution, and needs to work at 100 Hz.
 2. Read characters from UART and display the characters received on the first row of the LCD.
@@ -11,7 +11,7 @@ Project Description
 6. Whenever button S5 is pressed, send the current number of chars received to UART2.
 7. Whenever button S6 is pressed, clear the first row and reset the characters received counter.
 
-Tools Needed
+Tools Needed 🧰
 -----------------
 
 ▶ MPLAB X IDE:
@@ -20,7 +20,7 @@ http://www.microchip.com/mplab/mplab-x-ide
 ▶ XC16 Compiler:
 http://www.microchip.com/mplab/compilers
 
-Team Members
+Team Members 👨‍🔬
 -------------
 
 |    |Name |Surname |
